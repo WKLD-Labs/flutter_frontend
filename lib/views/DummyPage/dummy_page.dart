@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../widgets/nav_drawer.dart';
+
 class DummyPage extends StatefulWidget {
   const DummyPage({super.key, required this.title});
 
@@ -84,6 +86,7 @@ class _DummyPageState extends State<DummyPage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+      endDrawer: NavDrawer(context),
     );
   }
 }
