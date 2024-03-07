@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 // Views for Routing
-import 'views/HomePage/HomePage.dart';
-import 'views/DummyPage/DummyPage.dart';
+import 'views/HomePage/home_page.dart';
+import 'views/DummyPage/dummy_page.dart';
 
 void main() {
   runApp(const MyApp());
