@@ -1,94 +1,108 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../widgets/nav_drawer.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
   @override
-  State<HomePage> createState() => _HomePageState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('wkldLabs'),
+      ),
+      body: const SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              _Header(),
+              Card (
+                margin: EdgeInsets.fromLTRB(24, 12, 24, 6),
+                clipBehavior: Clip.hardEdge,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Text('Jadwal Ruangan Hari Ini:'),
+                      subtitle: Text('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse scelerisque purus augue, aliquam mattis odio pretium at. Nunc laoreet ex vel lorem tempus, sit amet faucibus dolor vestibulum. Suspendisse gravida odio quis velit gravida, nec ornare lorem pharetra. Integer purus felis, suscipit vel cursus ut, sollicitudin a libero.'),
+                    ),
+                  ],
+                )
+              ),
+              Card(
+                margin: EdgeInsets.fromLTRB(24, 6, 24, 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Text('Alamat Lab:'),
+                      subtitle: Text('Gedung TULT Lantai 6, Jl. Telekomunikasi Terusan Buah Batu, Bandung - 40257, Indonesia')
+                    ),
+                  ],
+                )
+              ),
+              Card(
+                margin: EdgeInsets.fromLTRB(24, 6, 24, 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Text('Media Sosial:'),
+                      subtitle: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Icon(FontAwesomeIcons.facebook, size: 48),
+                          Icon(FontAwesomeIcons.xTwitter, size: 48),
+                          Icon(FontAwesomeIcons.linkedin, size: 48),
+                          Icon(FontAwesomeIcons.instagram, size: 48),
+                          Icon(FontAwesomeIcons.youtube, size: 48),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              ),
+              
+            ],
+          ),
+        ),
+      ),
+      endDrawer: NavDrawer(context),
+    );
+  }
 }
 
-class _HomePageState extends State<HomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class _Header extends StatelessWidget {
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the HomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    return Container(
+      height: 256,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [
+          Theme.of(context).colorScheme.inversePrimary,
+          Theme.of(context).colorScheme.inversePrimary.withAlpha(0),
+        ], begin: Alignment.topCenter, end: Alignment.bottomCenter, stops: const [0.9, 1]),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'This is the HomePage, you have pushed the button this many times:', textAlign: TextAlign.center,
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            ElevatedButton(onPressed: () => context.go('/dummy'), child: const Text('To Dummy')),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/images/HomePage/ikbal.png'),
+            const SizedBox(
+              width: 256,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('OPEN RECRUITMENT EXTENDED!', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, height: 1), ),
+                  SizedBox(height: 8,),
+                  Text('Sekarang adalah saat yang tepat bagi kalian untuk bergabung dengan keluarga kami. Siapkan dirimu dan jadilah bagian dari perjalanan kami yang penuh inovasi!'),
+                ],
+              ),
+            )
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-      endDrawer: NavDrawer(context),
     );
   }
 }

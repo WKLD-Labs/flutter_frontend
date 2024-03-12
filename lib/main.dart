@@ -16,7 +16,7 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (BuildContext context, GoRouterState state) {
-        return const HomePage(title: 'wkldLabs Demo Home Page');
+        return const HomePage();
       },
       routes: <RouteBase>[
         GoRoute(
@@ -55,9 +55,14 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xfff15a24)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xfff15a24), brightness: Brightness.light),
         useMaterial3: true,
       ),
+      // darkTheme: ThemeData(
+      //   colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xfff15a24), brightness: Brightness.dark),
+      //   useMaterial3: true,
+      // ),
+      // themeMode: ThemeMode.system,
       routerConfig: _router,
     );
   }
