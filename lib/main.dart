@@ -1,12 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Views for Routing
-import 'views/DummyPage/DummyPage.dart';
 import 'views/Document/Document.dart';
+import 'views/HomePage/home_page.dart';
+import 'views/DummyPage/dummy_page.dart';
 
-void main() {
+Future main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
+
+
+/// The route configuration.
+final GoRouter _router = GoRouter(
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (BuildContext context, GoRouterState state) {
+        return const HomePage();
+      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'dummy',
+          builder: (BuildContext context, GoRouterState state) {
+            return const DummyPage(title: 'Flutter Demo Dummy Page');
+          },
+        ),
+      ],
+    ),
+  ],
+);
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,7 +40,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'wkldLabs',
       theme: ThemeData(
         // This is the theme of your application.
@@ -32,10 +58,15 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xfff15a24), brightness: Brightness.light),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // darkTheme: ThemeData(
+      //   colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xfff15a24), brightness: Brightness.dark),
+      //   useMaterial3: true,
+      // ),
+      // themeMode: ThemeMode.system,
+      routerConfig: _router,
     );
   }
 }
