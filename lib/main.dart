@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 // Views for Routing
 import 'views/DummyPage/DummyPage.dart';
+import 'views/Document/Document.dart';
 
 void main() {
   runApp(const MyApp());

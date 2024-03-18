@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class DocsPage extends StatefulWidget {
+  const DocsPage({super.key, required this.title});
   final String title;
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<DocsPage> createState() => _DocsPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _DocsPageState extends State<DocsPage> {
   int _counter = 0;
   void _incrementCounter() {
     setState(() {
@@ -27,7 +27,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'You have pushed the button this many times:',
+              'MAx',
             ),
             Text(
               '$_counter',
