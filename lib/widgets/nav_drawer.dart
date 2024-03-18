@@ -22,7 +22,7 @@ class NavDrawer extends StatelessWidget {
     _NavigationDestination(
       'Dummy', Icon(Icons.egg_outlined), Icon(Icons.egg), '/dummy'
     ),_NavigationDestination(
-      'Document', Icon(Icons.document_scanner_outlined), Icon(Icons.document_scanner), '/Document'
+      'Document', Icon(Icons.document_scanner_outlined), Icon(Icons.document_scanner), '/document'
     ),
   ];
 

@@ -29,9 +29,9 @@ final GoRouter _router = GoRouter(
           },
         ),
         GoRoute(
-          path: 'Document',
+          path: 'document',
           builder: (BuildContext context, GoRouterState state) {
-            return const DocumentPage(title: 'Flutter Demo Document Page');
+            return const DocumentPage(title: 'Document');
           },
         ),
       ],
