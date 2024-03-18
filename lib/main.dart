@@ -28,6 +28,12 @@ final GoRouter _router = GoRouter(
             return const DummyPage(title: 'Flutter Demo Dummy Page');
           },
         ),
+        GoRoute(
+          path: 'Document',
+          builder: (BuildContext context, GoRouterState state) {
+            return const DocumentPage(title: 'Flutter Demo Document Page');
+          },
+        ),
       ],
     ),
   ],
