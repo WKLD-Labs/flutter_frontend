@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -17,10 +18,14 @@ class _LoginPageState extends State<LoginPage>{
   final _formKey = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool _canCheckBiometric = false;
+  List<BiometricType> _availableBiometric = [];
   bool isFormEmpty = true;
 
   @override
   void initState() {
+    _checkBiometric();
+    _getAvailableBiometric();
     super.initState();
     _updateFormEmptyStatus();
   }
@@ -31,8 +36,47 @@ class _LoginPageState extends State<LoginPage>{
     });
   }
 
+  Future<void> _checkBiometric() async {
+    bool canCheckBiometric = false;
+
+    try {
+      canCheckBiometric = await _localAuthentication.canCheckBiometrics;
+    } on PlatformException catch (e) {
+      print(e);
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _canCheckBiometric = canCheckBiometric;
+    }
+    );
+  }
+
+  Future _getAvailableBiometric() async {
+    List<BiometricType> availableBiometric = [];
+
+    try {
+      availableBiometric = await _localAuthentication.getAvailableBiometrics();
+    } on PlatformException catch (e) {
+      print(e);
+    }
+
+    setState(() {
+      _availableBiometric = availableBiometric;
+    });
+  }
+
   void _auth() async {
-    if (await _localAuthentication.authenticate(localizedReason: 'Login dengan biometrics')){
+    bool authenticated = false;
+    try {
+      authenticated = await _localAuthentication.authenticate(
+          localizedReason: "Scan your finger to authenticate",
+          useErrorDialogs: true,
+          stickyAuth: true);
+    } on PlatformException catch (e) {
+      print(e);
+    }
+    if (authenticated){
       context.go('/');
     }
   }
@@ -107,9 +151,7 @@ class _LoginPageState extends State<LoginPage>{
                             Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: ElevatedButton(
-                                  onPressed: (){
-                                    _auth();
-                                  },
+                                  onPressed: _auth,
                                 child: const Icon(Icons.fingerprint),
                               ),
                             ),
