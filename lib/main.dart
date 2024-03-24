@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 // Views for Routing
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
+import 'views/RoomSchedule/room_schedule.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,6 +26,13 @@ final GoRouter _router = GoRouter(
             return const DummyPage(title: 'Flutter Demo Dummy Page');
           },
         ),
+        GoRoute(
+          path: 'roomschedule',
+          builder: (BuildContext context, GoRouterState state) {
+            return const RoomSchedule();
+          },
+        ),
+        
       ],
     ),
   ],
