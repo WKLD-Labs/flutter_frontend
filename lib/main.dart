@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:wkldlabs_flutter_frontend/views/DaftarPertemuan/pertemuan_page.dart';
 
 // Views for Routing
 import 'views/HomePage/home_page.dart';
@@ -33,7 +34,13 @@ final GoRouter _router = GoRouter(
           builder: (BuildContext context, GoRouterState state){
             return const LoginPage(title: 'Login Page');
           },
-        )
+        ),
+        GoRoute(
+          path: 'daftarpertemuan',
+          builder: (BuildContext context, GoRouterState state){
+            return const DaftarPertemuan(title: 'Coba');
+          },
+        ),
       ],
     ),
   ],
