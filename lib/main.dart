@@ -31,7 +31,7 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'document',
           builder: (BuildContext context, GoRouterState state) {
-            return const DocumentPage(title: 'Document');
+            return DocumentPage();
           },
         ),
       ],
