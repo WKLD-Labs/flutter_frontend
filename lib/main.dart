@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Views for Routing
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
+import 'views/LoginPage/login_page.dart';
 import 'views/RoomSchedule/room_schedule.dart';
 
-void main() {
+Future main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -24,6 +27,12 @@ final GoRouter _router = GoRouter(
           path: 'dummy',
           builder: (BuildContext context, GoRouterState state) {
             return const DummyPage(title: 'Flutter Demo Dummy Page');
+          },
+        ),
+        GoRoute(
+          path: 'login',
+          builder: (BuildContext context, GoRouterState state){
+            return const LoginPage(title: 'Login Page');
           },
         ),
         GoRoute(
