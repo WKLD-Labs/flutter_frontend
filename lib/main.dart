@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:wkldlabs_flutter_frontend/views/DaftarPertemuan/pertemuan_page.dart';
 
 // Views for Routing
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
 import 'views/LoginPage/login_page.dart';
+import 'views/DaftarPertemuan/pertemuan_page.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -36,9 +36,9 @@ final GoRouter _router = GoRouter(
           },
         ),
         GoRoute(
-          path: 'daftarpertemuan',
+          path: 'pertemuan',
           builder: (BuildContext context, GoRouterState state){
-            return const DaftarPertemuan(title: 'Coba');
+            return const DaftarPertemuan(title: 'Daftar Pertemuan');
           },
         ),
       ],

@@ -27,7 +27,7 @@ class NavDrawer extends StatelessWidget {
         'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
     ),
     _NavigationDestination(
-        'Pertemuan', Icon(Icons.egg_outlined), Icon(Icons.egg), '/pertemuan'
+        'Pertemuan', Icon(Icons.event_outlined), Icon(Icons.event), '/pertemuan'
     )
   ];
 
