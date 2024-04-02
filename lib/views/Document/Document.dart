@@ -118,6 +118,7 @@ class CardItem extends StatelessWidget {
                   if (!status)
                     Expanded(
                       child: Text(
+                        textAlign: TextAlign.center,
                         borrower,
                         style: const TextStyle(color: Colors.black, fontSize: 14),
                       ),
