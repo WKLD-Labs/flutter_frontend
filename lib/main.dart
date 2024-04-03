@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
 import 'views/JadwalPage/jadwal_page.dart';
+import 'views/AgendaPage/agenda_page.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -32,6 +33,12 @@ final GoRouter _router = GoRouter(
           path: 'jadwal',
           builder: (BuildContext context, GoRouterState state) {
             return const JadwalPage(title: 'Flutter Demo Jadwal Page');
+          },
+        ),
+        GoRoute(
+          path: 'agenda',
+          builder: (BuildContext context, GoRouterState state) {
+            return const AgendaPage(title: 'Flutter Demo Agenda Page');
           },
         ),
       ],
