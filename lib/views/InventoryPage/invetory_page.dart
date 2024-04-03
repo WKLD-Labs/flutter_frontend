@@ -48,93 +48,69 @@ class _InventoryPageState extends State<InventoryPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Column(
-        children: [
-          const Text('Inventory Details',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'ID',
-                    ),
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                    ),
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                    ),
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Unit',
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Respond to button press
-                    },
-                    child: const Text('Update'),
-                  ),
-                ],
-              ),
+      body: ListView.builder(
+        itemCount: data.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Card(
+            child: ListTile(
+              leading: Image.network(data[index]['image']),
+              title: Text(data[index]['name']),
+              subtitle: Text(data[index]['description']),
+              trailing: Text(data[index]['unit'].toString()),
             ),
-          ),
-          const Text('Inventory List',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          DataTable(
-            columns: [
-              DataColumn(label: const Text('Name')),
-              DataColumn(label: const Text('Date')),
-              DataColumn(label: const Text('Action')),
-            ],
-            rows: data.asMap().entries.map((entry) {
-              int index = entry.key;
-              return DataRow(
-                cells: [
-                  DataCell(Text(entry.value['name'].toString())),
-                  DataCell(Text(entry.value['date'].toString())),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      // Respond to button press
-                    },
-                  )),
-                ],
-                onSelectChanged: (bool? selected) {
-                  if (selected != null && selected) {
-                    // Respond to row selection
-                  }
-                },
-                color: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-                  if (states.contains(MaterialState.selected)) {
-                    return Theme.of(context).colorScheme.primary.withOpacity(0.08);
-                  }
-                  if (index % 2 == 0) {
-                    return Color(0xf000000); // Grey color for even rows
-                  }
-                  return Colors.white; // White color for odd rows
-                }
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add data dialog
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return SizedBox(
+                height: 300,
+                child: AlertDialog(
+                  title: const Text('Add Data'),
+                  content: Column(
+                    children: <Widget>[
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'Name'),
+                      ),
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'Description'),
+                      ),
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'Unit'),
+                      ),
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'Date'),
+                      ),
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'Image URL'),
+                      ),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Add'),
+                    ),
+                  ],
                 ),
               );
-            }).toList()
-          ),
-        ],
+            },
+          );
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       )
     );
   }
