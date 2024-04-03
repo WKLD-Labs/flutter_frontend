@@ -25,6 +25,9 @@ class NavDrawer extends StatelessWidget {
     _NavigationDestination(
         'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
     ),
+    _NavigationDestination(
+      'Jadwal Ruangan', Icon(Icons.room_outlined), Icon(Icons.room), '/roomschedule'
+    ),
   ];
 
   

@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
 import 'views/LoginPage/login_page.dart';
+import 'views/RoomSchedule/room_schedule.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -33,7 +34,14 @@ final GoRouter _router = GoRouter(
           builder: (BuildContext context, GoRouterState state){
             return const LoginPage(title: 'Login Page');
           },
-        )
+        ),
+        GoRoute(
+          path: 'roomschedule',
+          builder: (BuildContext context, GoRouterState state) {
+            return const RoomSchedule();
+          },
+        ),
+        
       ],
     ),
   ],
