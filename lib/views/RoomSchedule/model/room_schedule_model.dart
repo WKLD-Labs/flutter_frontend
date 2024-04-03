@@ -1,5 +1,5 @@
 class RoomScheduleModel {
-  final int id;
+  final int? id;
   final String name;
   final String description;
   final DateTime startDate;
@@ -7,8 +7,8 @@ class RoomScheduleModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  RoomScheduleModel({
-    required this.id,
+  const RoomScheduleModel({
+    this.id,
     required this.name,
     required this.description,
     required this.startDate,
