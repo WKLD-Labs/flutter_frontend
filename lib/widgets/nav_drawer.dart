@@ -23,7 +23,10 @@ class NavDrawer extends StatelessWidget {
       'Dummy', Icon(Icons.egg_outlined), Icon(Icons.egg), '/dummy'
     ),
     _NavigationDestination(
-        'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
+      'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
+    ),
+    _NavigationDestination(
+      'Document', Icon(Icons.document_scanner_outlined), Icon(Icons.document_scanner), '/document'
     ),
     _NavigationDestination(
       'Jadwal Ruangan', Icon(Icons.room_outlined), Icon(Icons.room), '/roomschedule'
