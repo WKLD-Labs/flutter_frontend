@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cr_calendar/cr_calendar.dart';
-import 'package:intl/intl.dart';
 
+import './model/room_schedule_model.dart';
+
+import './components/calendar_list.dart';
+import './components/calendar_card.dart';
 
 import '../../widgets/nav_drawer.dart';
 
@@ -13,24 +15,21 @@ class RoomSchedule extends StatefulWidget {
 }
 
 class _RoomScheduleState extends State<RoomSchedule> {
-  final DateTime _currentTime = DateTime.now();
-  String _calendarText = '';
   
-  late CrCalendarController _calendarController = CrCalendarController(
-      onSwipe: _onCalendarSwipe,
-    );
 
-  void _onCalendarSwipe(int year, int month) {
-    final date = DateTime(year, month);
-    debugPrint(date.toString());
-    setState(() {
-      _calendarText = DateFormat(DateFormat.YEAR_MONTH).format(date);
-    });
-  }
+  List<RoomScheduleModel> roomSchedules = [];
 
   @override
   void initState() {
-    _onCalendarSwipe(_currentTime.year, _currentTime.month);
+    setState(() {
+      roomSchedules = [
+        RoomScheduleModel(id: 1, name: 'Kegiatan 1', description: 'Deskripsi Kegiatan 1', startDate: DateTime.now().subtract(Duration(days: 5)), endDate: DateTime.now()),
+        RoomScheduleModel(id: 2, name: 'Kegiatan 2', description: 'Deskripsi Kegiatan 2', startDate: DateTime.now().add(Duration(days: 1)), endDate: DateTime.now().add(Duration(days:4))),
+        RoomScheduleModel(id: 3, name: 'Kegiatan 3', description: 'Deskripsi Kegiatan 3', startDate: DateTime.now().add(Duration(days: 7)), endDate: DateTime.now().add(Duration(days:8))),
+        RoomScheduleModel(id: 4, name: 'Kegiatan 4', description: 'Deskripsi Kegiatan 4', startDate: DateTime.now().add(Duration(days: 11)), endDate: DateTime.now().add(Duration(days:12))),
+      ];
+    });
+    
     super.initState();
   }
 
@@ -47,58 +46,12 @@ class _RoomScheduleState extends State<RoomSchedule> {
           child: Flex(
             direction: Axis.vertical,
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(onPressed: _calendarController.swipeToPreviousPage, icon: const Icon(Icons.arrow_back)),
-                          TextButton(onPressed: () => _calendarController.goToDate(_currentTime), child: Text(_calendarText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),)),
-                          IconButton(onPressed: _calendarController.swipeToNextMonth, icon: const Icon(Icons.arrow_forward)),
-                        ],
-                      ),
-                      SizedBox(
-                        width: 320,
-                        height: 320,
-                        child: CrCalendar(
-                          controller: _calendarController,
-                          initialDate: _currentTime
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              CalendarCard(calendarData: roomSchedules,),
               const Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text('Jadwal', style: TextStyle(fontSize: 24),),
               ),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: 2,
-                  separatorBuilder: (context, index) => Divider(thickness: 1, color: Colors.grey.shade200,),
-                  itemBuilder: (context, index) => ListTile(
-                    title: Text("Kegiatan ${index + 1}"),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('11 Maret 2024 pukul 15.00'),
-                        Text('12 Maret 2024 pukul 16.00'),
-                      ],
-                    ),
-                    trailing: MenuAnchor(
-                      builder: (context, controller, child) => IconButton(onPressed: () => controller.isOpen ? controller.close() : controller.open(), icon: const Icon(Icons.more_vert)),
-                      menuChildren: [
-                        MenuItemButton(onPressed: ()=>debugPrint("Edit!"), child: const Text('Edit')),
-                        MenuItemButton(onPressed: ()=>debugPrint("Hapus!"), child: const Text('Hapus')),
-                      ],
-                    ),
-                  ),
-                ),
-              )
+              CalendarList(calendarData: roomSchedules,)
             ],
           ),
         ),
@@ -112,3 +65,5 @@ class _RoomScheduleState extends State<RoomSchedule> {
     );
   }
 }
+
+
