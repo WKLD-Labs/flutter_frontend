@@ -217,7 +217,7 @@ class ViewMemberData extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(data['Name'] ?? ''), // Add null check for name
-            Text(data['NIM'] != null ? data['datetime'] : ''), // Check if NIM is not null
+            Text(data['NIM'] ?? ''), // Add null check for nim
             Text(data['Class'] ?? ''), // Add null check for Class
             Text(data['Major'] ?? ''), // Add null check for Major
             SizedBox(height: 16),
