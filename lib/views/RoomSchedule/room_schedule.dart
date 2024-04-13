@@ -37,6 +37,7 @@ class _RoomScheduleState extends State<RoomSchedule> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Jadwal Ruangan'),
@@ -161,7 +162,19 @@ class _NewScheduleDialogState extends State<NewScheduleDialog> {
                     });
                   }
                 },
-                child: Text(timeFormatter.format(endDate), style: const TextStyle(fontSize: 24),),)
+                child: Text(
+                timeFormatter.format(endDate),
+                style: const TextStyle(fontSize: 24),
+              ),
+            ),
+            const Text('Deskripsi: ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            TextField(
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              decoration: InputDecoration(
+                filled: true,
+              ),
+            )
             ],
           ),
         ),
