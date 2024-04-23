@@ -42,12 +42,21 @@ final GoRouter _router = GoRouter(
           path: 'inventory',
           builder: (BuildContext context, GoRouterState state){
             return const InventoryPage(title: 'Inventory Page');
+          },
+        ),
+        GoRoute(
           path: 'member',
           builder: (BuildContext context, GoRouterState state){
             return const MemberPage(title: 'Member Page');
+          },
+        ),
+        GoRoute(
           path: 'roomschedule',
           builder: (BuildContext context, GoRouterState state) {
             return const RoomSchedule();
+          },
+        ),
+        GoRoute(
           path: 'document',
           builder: (BuildContext context, GoRouterState state) {
             return DocumentPage();
