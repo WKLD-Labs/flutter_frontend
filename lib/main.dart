@@ -7,6 +7,7 @@ import 'views/Document/Document.dart';
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
 import 'views/LoginPage/login_page.dart';
+import 'views/MemberPage/member_page.dart';
 import 'views/RoomSchedule/room_schedule.dart';
 
 Future main() async {
@@ -37,12 +38,12 @@ final GoRouter _router = GoRouter(
           },
         ),
         GoRoute(
+          path: 'member',
+          builder: (BuildContext context, GoRouterState state){
+            return const MemberPage(title: 'Member Page');
           path: 'roomschedule',
           builder: (BuildContext context, GoRouterState state) {
             return const RoomSchedule();
-          },
-        ),
-        GoRoute(
           path: 'document',
           builder: (BuildContext context, GoRouterState state) {
             return DocumentPage();
