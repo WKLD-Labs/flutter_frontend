@@ -7,6 +7,7 @@ import 'views/Document/Document.dart';
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
 import 'views/LoginPage/login_page.dart';
+import 'views/InventoryPage/invetory_page.dart';
 import 'views/MemberPage/member_page.dart';
 import 'views/RoomSchedule/room_schedule.dart';
 
@@ -38,6 +39,9 @@ final GoRouter _router = GoRouter(
           },
         ),
         GoRoute(
+          path: 'inventory',
+          builder: (BuildContext context, GoRouterState state){
+            return const InventoryPage(title: 'Inventory Page');
           path: 'member',
           builder: (BuildContext context, GoRouterState state){
             return const MemberPage(title: 'Member Page');

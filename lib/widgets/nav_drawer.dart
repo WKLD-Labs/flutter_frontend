@@ -26,6 +26,9 @@ class NavDrawer extends StatelessWidget {
       'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
     ),
     _NavigationDestination(
+        'Inventory', Icon(Icons.inventory_2_outlined), Icon(Icons.inventory_2_outlined), '/inventory'
+    ),
+    _NavigationDestination(
       'Document', Icon(Icons.document_scanner_outlined), Icon(Icons.document_scanner), '/document'
     ),
     _NavigationDestination(
