@@ -24,6 +24,12 @@ class NavDrawer extends StatelessWidget {
       'Dummy', Icon(Icons.egg_outlined), Icon(Icons.egg), '/dummy'
     ),
     _NavigationDestination(
+      'Jadwal', Icon(Icons.egg_outlined), Icon(Icons.egg), '/jadwal'
+    ),
+    _NavigationDestination(
+      'Agenda', Icon(Icons.egg_outlined), Icon(Icons.egg), '/agenda'
+    ),
+    _NavigationDestination(
       'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
     ),
     _NavigationDestination(
