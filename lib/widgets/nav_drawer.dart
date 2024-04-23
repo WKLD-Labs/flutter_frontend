@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 class _NavigationDestination {
@@ -24,6 +25,9 @@ class NavDrawer extends StatelessWidget {
     ),
     _NavigationDestination(
       'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
+    ),
+    _NavigationDestination(
+        'Pertemuan', Icon(Icons.event_outlined), Icon(Icons.event), '/pertemuan'
     ),
     _NavigationDestination(
         'Inventory', Icon(Icons.inventory_2_outlined), Icon(Icons.inventory_2_outlined), '/inventory'
