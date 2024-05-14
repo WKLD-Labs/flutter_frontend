@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
-
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../widgets/nav_drawer.dart';
+
+final uri = dotenv.env['API_SERVER']!;
 
 class LoginPage extends StatefulWidget{
   const LoginPage({super.key, required this.title});
@@ -19,6 +22,25 @@ class _LoginPageState extends State<LoginPage>{
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isFormEmpty = true;
+
+  final dio = Dio();
+
+  void login() async {
+    try {
+      final response = await dio.post(
+        '$uri/api/login',
+        data: {
+          'username': usernameController.text,
+          'password': passwordController.text,
+        },
+      );
+      if (response.statusCode == 200){
+        context.go('/');
+      }
+    } catch (e){
+      print(e);
+    }
+  }
 
   @override
   void initState() {
@@ -108,7 +130,9 @@ class _LoginPageState extends State<LoginPage>{
                           children: [
                             ElevatedButton(
                               onPressed: isFormEmpty ? null : (){
-                                context.go('/');
+                                if (_formKey.currentState!.validate()){
+                                  login();
+                                }
                               },
                               child: const Text('Submit'),
                             ),
