@@ -69,7 +69,13 @@ class ScheduleList extends StatelessWidget {
                 ),
                 menuChildren: [
                   MenuItemButton(
-                      onPressed: () => debugPrint("Edit!"),
+                      onPressed: () => showDialog<void>(
+                        context: context,
+                        barrierDismissible: false, // user must tap button!
+                        builder: (BuildContext context) {
+                          return ModifyScheduleDialog(onSubmit: onRefresh, schedule: calendarData[index],);
+                        },
+                      ),
                       child: const Text('Edit')),
                   MenuItemButton(
                       onPressed: () async {
@@ -276,3 +282,189 @@ class _NewScheduleDialogState extends State<NewScheduleDialog> {
       );
   }
 }
+
+
+
+
+
+class ModifyScheduleDialog extends StatefulWidget {
+  const ModifyScheduleDialog({
+    super.key,
+    required this.schedule,
+    required this.onSubmit,
+    });
+
+  final Function() onSubmit;
+  final RoomScheduleModel schedule;
+  @override
+  State<ModifyScheduleDialog> createState() => _ModifyScheduleDialogState();
+}
+
+class _ModifyScheduleDialogState extends State<ModifyScheduleDialog> {
+  final _formKey = GlobalKey<FormState>();
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now().add(const Duration(days: 1));
+  static final DateFormat dateFormatter = DateFormat('dd MMMM yyyy');
+  static final DateFormat timeFormatter = DateFormat('HH.mm');
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    startDate = widget.schedule.startDate;
+    endDate = widget.schedule.endDate;
+    nameController.text = widget.schedule.name;
+    descriptionController.text = widget.schedule.description;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+        title: const Text('Edit Jadwal Ruangan'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nama Kegiatan',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Nama Kegiatan tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Deskripsi',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Deskripsi tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const Text('Pilih Tanggal:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            TextButton(
+              onPressed: () async {
+                DateTimeRange? dateRange = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                    lastDate: DateTime.now().add(const Duration(days: 365)));
+                if (dateRange != null) {
+                  setState(() {
+                    startDate = DateTime(
+                      dateRange.start.year,
+                      dateRange.start.month,
+                      dateRange.start.day,
+                      startDate.hour,
+                      startDate.minute,
+                      startDate.second,
+                    );
+                    endDate = DateTime(
+                      dateRange.end.year,
+                      dateRange.end.month,
+                      dateRange.end.day,
+                      endDate.hour,
+                      endDate.minute,
+                      endDate.second,
+                    );
+                  });
+                }
+              },
+              child: Column(
+                children: [
+                  Text("Mulai: ${dateFormatter.format(startDate)}"),
+                  Text("Akhir: ${dateFormatter.format(endDate)}"),
+                ],
+              ),
+            ),
+             const Text('Jam Mulai:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            TextButton(
+                onPressed: () async {
+                  TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                  if (newTime != null) {
+                    setState(() {
+                      startDate = DateTime(
+                        startDate.year,
+                        startDate.month,
+                        startDate.day,
+                        newTime.hour,
+                        newTime.minute,
+                      );
+                    });
+                  }
+                },
+                child: Text(timeFormatter.format(startDate), style: const TextStyle(fontSize: 24),)),
+            const Text('Jam Akhir:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            TextButton(
+                onPressed: () async {
+                  TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                  if (newTime != null) {
+                    setState(() {
+                      endDate = DateTime(
+                        endDate.year,
+                        endDate.month,
+                        endDate.day,
+                        newTime.hour,
+                        newTime.minute,
+                      );
+                    });
+                  }
+                },
+                child: Text(timeFormatter.format(endDate), style: const TextStyle(fontSize: 24),),)
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Batal'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Simpan'),
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                RoomScheduleModel newSchedule = RoomScheduleModel(
+                  id: widget.schedule.id,
+                  name: nameController.text,
+                  description: descriptionController.text,
+                  startDate: startDate,
+                  endDate: endDate,
+                );
+                try {
+                  await RoomScheduleAPI().update(newSchedule);
+                  widget.onSubmit();
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(e.toString()),
+                  ));
+                }
+                
+                
+              }
+            },
+          ),
+        ],
+      );
+  }
+}
+
+
+

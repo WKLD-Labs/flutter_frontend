@@ -90,7 +90,6 @@ class RoomScheduleAPI {
   Future<RoomScheduleModel> update(RoomScheduleModel roomSchedule) async {
     try {
       String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
-      FormData data = FormData.fromMap(roomSchedule.toJson());
       if (roomSchedule.id == null) {
         throw Exception('ID tidak boleh kosong');
       }
@@ -101,7 +100,7 @@ class RoomScheduleAPI {
             HttpHeaders.authorizationHeader: "Bearer $bearerToken",
           },
         ),
-        data: data,
+        data: roomSchedule.toJson(),
       );
       if (response.statusCode != 200) {
         throw Exception('Terjadi Kesalahan');
