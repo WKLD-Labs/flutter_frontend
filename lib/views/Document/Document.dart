@@ -242,13 +242,16 @@ class _DocumentDetailsDialogState extends State<DocumentDetailsDialog> {
   late TextEditingController _titleController;
   late TextEditingController _writerController;
   late TextEditingController _descriptionController;
+  late TextEditingController _borrowController;
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.document.title);
     _writerController = TextEditingController(text: widget.document.writer);
-    _descriptionController = TextEditingController(text: widget.document.description);
+    _descriptionController =
+        TextEditingController(text: widget.document.description);
+    _borrowController = TextEditingController(text: widget.document.borrower);
   }
 
   @override
@@ -256,6 +259,7 @@ class _DocumentDetailsDialogState extends State<DocumentDetailsDialog> {
     _titleController.dispose();
     _writerController.dispose();
     _descriptionController.dispose();
+    _borrowController.dispose();
     super.dispose();
   }
 
@@ -278,6 +282,10 @@ class _DocumentDetailsDialogState extends State<DocumentDetailsDialog> {
             controller: _descriptionController,
             decoration: InputDecoration(labelText: 'Description'),
           ),
+          TextField(
+            controller: _borrowController,
+            decoration: InputDecoration(labelText: 'Borrower'),
+          ),
         ],
       ),
       actions: [
@@ -294,8 +302,8 @@ class _DocumentDetailsDialogState extends State<DocumentDetailsDialog> {
               title: _titleController.text,
               writer: _writerController.text,
               description: _descriptionController.text,
-              status: widget.document.status,
-              borrower: widget.document.borrower,
+              status: _borrowController.text.isEmpty ? true : widget.document.status,
+              borrower: _borrowController.text.isNotEmpty ? _borrowController.text : null,
               createdAt: widget.document.createdAt,
               updatedAt: DateTime.now(), // Update the timestamp
             );
@@ -323,12 +331,14 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: document.status ? const Color.fromARGB(255, 187, 249, 189) : const Color.fromARGB(255, 181, 181, 181),
+      color: (!document.status || document.borrower != null)
+          ? const Color.fromARGB(255, 181, 181, 181)
+          : const Color.fromARGB(255, 187, 249, 189),
       child: ListTile(
         title: Text(document.title),
         subtitle: Text(document.writer ?? ''),
         trailing: IconButton(
-          icon: Icon(Icons.delete),
+          icon: const Icon(Icons.delete),
           onPressed: () {
             if (document.id != null) {
               _showDeleteConfirmationDialog(context, document.id!);
@@ -338,7 +348,7 @@ class CardItem extends StatelessWidget {
           },
         ),
         onTap: () {
-          _showDocumentDetailsDialog(context, document);
+          _showDocumentDetailsDialog(context);
         },
       ),
     );
@@ -349,21 +359,21 @@ class CardItem extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmation'),
-          content: Text('Are you sure you want to delete this document?'),
+          title: const Text('Confirmation'),
+          content: const Text('Are you sure want to delete this document?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('No'),
+              child: const Text('No'),
             ),
             TextButton(
               onPressed: () {
                 onDelete(documentId);
                 Navigator.of(context).pop();
               },
-              child: Text('Yes'),
+              child: const Text('Yes'),
             ),
           ],
         );
@@ -371,13 +381,44 @@ class CardItem extends StatelessWidget {
     );
   }
 
-  void _showDocumentDetailsDialog(BuildContext context, Document document) {
+  void _showDocumentDetailsDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return DocumentDetailsDialog(
-          document: document,
-          onUpdate: onUpdate,
+        return AlertDialog(
+          title: const Text('Document Details'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Title: ${document.title}'),
+              Text('Writer: ${document.writer ?? ''}'),
+              Text('Description: ${document.description ?? ''}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Show the DocumentDetailsDialog to edit the document
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return DocumentDetailsDialog(
+                      document: document,
+                      onUpdate: onUpdate,
+                    );
+                  },
+                );
+              },
+              child: const Text('Edit'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
         );
       },
     );
