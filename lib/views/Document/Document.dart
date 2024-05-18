@@ -1,5 +1,3 @@
-// ignore_for_file: file_names
-
 import 'package:flutter/material.dart';
 import '../../widgets/nav_drawer.dart';
 import 'model.dart';
@@ -30,38 +28,8 @@ class DocumentPage extends StatelessWidget {
 }
 
 class DocumentBody extends StatelessWidget {
-  final List<Document> documents = [
-    Document(
-      title: 'Document 1',
-      subtitle: 'Subtitle 1',
-      status: true,
-      borrower: 'Borrower 1',
-    ),
-    Document(
-      title: 'Document 2',
-      subtitle: 'Subtitle 2',
-      status: false,
-      borrower: 'Borrower 2',
-    ),
-    Document(
-      title: 'Document 3',
-      subtitle: 'Subtitle 3',
-      status: true,
-      borrower: 'Borrower 3',
-    ),
-    Document(
-      title: 'Document 4',
-      subtitle: 'Subtitle 4',
-      status: false,
-      borrower: 'Borrower 4',
-    ),
-    Document(
-      title: 'Document 5',
-      subtitle: 'Subtitle 5',
-      status: true,
-      borrower: 'Borrower 5',
-    ),
-  ];
+  final List<Document> documents = [];
+
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +108,7 @@ class CardItem extends StatelessWidget {
       child: ListTile(
         title: Row(
           children: [
-            DocumentInfo(title: document.title, subtitle: document.subtitle),
+            DocumentInfo(title: document.title, writer: document.writer),
             DocumentStatus(
                 status: document.status, borrower: document.borrower),
             DocumentActions(status: document.status),
@@ -153,9 +121,9 @@ class CardItem extends StatelessWidget {
 
 class DocumentInfo extends StatelessWidget {
   final String title;
-  final String subtitle;
+  final String writer;
 
-  const DocumentInfo({required this.title, required this.subtitle});
+  const DocumentInfo({required this.title, required this.writer});
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +134,7 @@ class DocumentInfo extends StatelessWidget {
         children: [
           Text(title),
           Text(
-            subtitle,
+            writer,
             style: const TextStyle(color: Colors.grey),
           ),
         ],
