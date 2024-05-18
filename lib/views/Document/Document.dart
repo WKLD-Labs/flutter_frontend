@@ -1,8 +1,75 @@
 import 'package:flutter/material.dart';
 import '../../widgets/nav_drawer.dart';
+import 'db_controller.dart';
 import 'model.dart';
 
-class DocumentPage extends StatelessWidget {
+class DocumentPage extends StatefulWidget {
+  @override
+  _DocumentPageState createState() => _DocumentPageState();
+}
+
+class _DocumentPageState extends State<DocumentPage> {
+  List<Document> documents = [];
+  final DocumentsAPI api = DocumentsAPI();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDocuments();
+  }
+
+  void _fetchDocuments() async {
+    try {
+      List<Document> fetchedDocuments = await api.getList();
+      setState(() {
+        documents = fetchedDocuments;
+      });
+    } catch (e) {
+      print('Error fetching documents: $e');
+    }
+  }
+
+  void _deleteDocument(int documentId) async {
+    try {
+      await api.delete(documentId);
+      setState(() {
+        documents.removeWhere((document) => document.id == documentId);
+      });
+    } catch (e) {
+      print('Error deleting document: $e');
+    }
+  }
+
+  void _addDocument(String name, String writer) async {
+    try {
+      Document newDocument = await api.create(Document(
+        title: name,
+        writer: writer,
+        status: true, // Assuming default status is true
+      ));
+      setState(() {
+        documents.add(newDocument);
+      });
+      _fetchDocuments();
+    } catch (e) {
+      print('Error adding document: $e');
+    }
+  }
+
+  void _updateDocument(Document updatedDocument) async {
+    try {
+      await api.update(updatedDocument);
+      setState(() {
+        int index = documents.indexWhere((doc) => doc.id == updatedDocument.id);
+        if (index != -1) {
+          documents[index] = updatedDocument;
+        }
+      });
+    } catch (e) {
+      print('Error updating document: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,87 +77,58 @@ class DocumentPage extends StatelessWidget {
         title: const Text('Document'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: DocumentBody(),
+      body: DocumentBody(
+        documents: documents,
+        onDelete: _deleteDocument,
+        onRefresh: _fetchDocuments,
+      ),
       endDrawer: NavDrawer(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AddDocumentDialog();
-            },
-          );
+          _showAddDocumentDialog(context);
         },
         child: Icon(Icons.add),
       ),
     );
   }
+
+  void _showAddDocumentDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AddDocumentDialog(
+          onDocumentAdded: _addDocument,
+        );
+      },
+    );
+  }
 }
 
 class DocumentBody extends StatelessWidget {
-  final List<Document> documents = [];
+  final List<Document> documents;
+  final Function(int) onDelete;
+  final Function() onRefresh;
 
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SearchBar(),
-        SearchResultsCount(count: documents.length),
-        Expanded(
-          child: ListView.builder(
-            itemCount: documents.length,
-            itemBuilder: (context, index) {
-              return CardItem(document: documents[index]);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class SearchBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(8.0),
-            child: TextFormField(
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-              ),
-            ),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {
-            // Perform search action
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class SearchResultsCount extends StatelessWidget {
-  final int count;
-
-  const SearchResultsCount({required this.count});
+  const DocumentBody({
+    required this.documents,
+    required this.onDelete,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        'Search Results ($count)',
-        style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+    return RefreshIndicator(
+      onRefresh: () async {
+        onRefresh();
+      },
+      child: ListView.builder(
+        itemCount: documents.length,
+        itemBuilder: (context, index) {
+          return CardItem(
+            document: documents[index],
+            onDelete: onDelete,
+          );
+        },
       ),
     );
   }
@@ -98,129 +136,36 @@ class SearchResultsCount extends StatelessWidget {
 
 class CardItem extends StatelessWidget {
   final Document document;
+  final Function(int) onDelete;
 
-  const CardItem({required this.document});
+  const CardItem({
+    required this.document,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      surfaceTintColor: Color.fromARGB(255, 146, 146, 146),
       child: ListTile(
-        title: Row(
-          children: [
-            DocumentInfo(title: document.title, writer: document.writer),
-            DocumentStatus(
-                status: document.status, borrower: document.borrower),
-            DocumentActions(status: document.status),
-          ],
+        title: Text(document.title),
+        subtitle: Text(document.writer ?? ''),
+        trailing: IconButton(
+          icon: Icon(Icons.delete),
+          onPressed: () {
+            if (document.id != null) {
+              _showDeleteConfirmationDialog(context, document.id!);
+            } else {
+              // Handle the case where id is null
+              // For example, show an error message or log a warning
+              print('Document id is null');
+            }
+          },
         ),
       ),
     );
   }
-}
 
-class DocumentInfo extends StatelessWidget {
-  final String title;
-  final String writer;
-
-  const DocumentInfo({required this.title, required this.writer});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: 3,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title),
-          Text(
-            writer,
-            style: const TextStyle(color: Colors.grey),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class DocumentStatus extends StatelessWidget {
-  final bool status;
-  final String borrower;
-
-  const DocumentStatus({required this.status, required this.borrower});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: 3,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Container(
-              width: 120,
-              alignment: Alignment.center,
-              color: status ? Colors.green : null,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Text(
-                status ? 'Available' : borrower,
-                style: TextStyle(
-                  color: status ? Colors.white : Colors.black,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 5),
-        ],
-      ),
-    );
-  }
-}
-
-class DocumentActions extends StatelessWidget {
-  final bool status;
-
-  const DocumentActions({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: 2,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Expanded(
-            child: status
-                ? IconButton(
-                    onPressed: () {
-                      // Handle borrow button action
-                    },
-                    icon: Icon(Icons.bookmark),
-                    color: Colors.black,
-                  )
-                : const IconButton(
-                    onPressed: null,
-                    icon: Icon(Icons.bookmark),
-                    color: Colors.grey,
-                  ),
-          ),
-          Expanded(
-            child: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                _showDeleteConfirmationDialog(context);
-              },
-              color: Colors.red,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteConfirmationDialog(BuildContext context) {
+  void _showDeleteConfirmationDialog(BuildContext context, int documentId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -236,41 +181,10 @@ class DocumentActions extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
+                onDelete(documentId);
                 Navigator.of(context).pop();
-                _showDeleteAlert(context);
               },
               child: Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _deleteDocument(BuildContext context) {
-    // Perform delete action
-
-    // Pop all routes until the confirmation dialog route
-    Navigator.of(context)
-        .popUntil(ModalRoute.withName(Navigator.defaultRouteName));
-
-    // Show delete alert
-    _showDeleteAlert(context);
-  }
-
-  void _showDeleteAlert(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Alert'),
-          content: Text('Document is deleted.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
             ),
           ],
         );
@@ -280,15 +194,17 @@ class DocumentActions extends StatelessWidget {
 }
 
 class AddDocumentDialog extends StatefulWidget {
+  final Function(String, String) onDocumentAdded;
+
+  AddDocumentDialog({required this.onDocumentAdded});
+
   @override
   _AddDocumentDialogState createState() => _AddDocumentDialogState();
 }
 
 class _AddDocumentDialogState extends State<AddDocumentDialog> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _writerController = TextEditingController();
-
-  Map<String, String> documentData = {};
 
   @override
   Widget build(BuildContext context) {
@@ -298,8 +214,8 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
-            controller: _nameController,
-            decoration: InputDecoration(labelText: 'Name'),
+            controller: _titleController,
+            decoration: InputDecoration(labelText: 'Title'),
           ),
           TextField(
             controller: _writerController,
@@ -310,27 +226,26 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            _nameController.clear();
+            _titleController.clear();
             _writerController.clear();
             Navigator.of(context).pop();
           },
           child: Text('Cancel'),
         ),
         TextButton(
-          onPressed: _saveDocument,
+          onPressed: () {
+            String name = _titleController.text;
+            String writer = _writerController.text;
+            if (name.isNotEmpty && writer.isNotEmpty) {
+              widget.onDocumentAdded(name, writer);
+              Navigator.of(context).pop();
+            } else {
+              // Show an error message or handle empty fields
+            }
+          },
           child: Text('Save'),
         ),
       ],
     );
-  }
-
-  void _saveDocument() {
-    setState(() {
-      documentData['name'] = _nameController.text;
-      documentData['writer'] = _writerController.text;
-    });
-    _nameController.clear();
-    _writerController.clear();
-    Navigator.of(context).pop(documentData);
   }
 }

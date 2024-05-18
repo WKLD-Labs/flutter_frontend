@@ -1,5 +1,5 @@
 class Document {
-  final int id;
+  final int? id;
   final String title;
   final String? writer;
   final String? description;
@@ -9,7 +9,7 @@ class Document {
   final DateTime? updatedAt;
 
   Document({
-    required this.id,
+    this.id,
     required this.title,
     this.writer,
     this.description,
@@ -22,17 +22,17 @@ class Document {
   factory Document.fromJson(Map<String, dynamic> json) {
     return Document(
       id: json['id'],
-      title: json['title'],
+      title: json['title'] ?? '',
       writer: json['writer'],
       description: json['description'],
-      status: json['status'],
+      status: json['status'] ?? false,
       borrower: json['borrower'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
 
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,

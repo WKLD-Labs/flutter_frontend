@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -5,131 +6,128 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'model.dart';
 
-class documentsAPI {
-  static final documentsAPI _instance = documentsAPI._constructor();
+class DocumentsAPI {
+  static final DocumentsAPI _instance = DocumentsAPI._constructor();
   static final Dio _dio = Dio();
-  factory documentsAPI() {
+  factory DocumentsAPI() {
     return _instance;
   }
-  documentsAPI._constructor();
+  DocumentsAPI._constructor();
 
-  Exception dioExceptionHandler(e) {
-    if (e.response != null && e.response?.data is Map) {
-        if (e.response?.data.containsKey('error')) {
-          return Exception(e.response?.data['error']);
-        } else if (e.response?.data.containsKey('message')) {
-          return Exception(e.response?.data['message']);
-        } else {
-          return Exception(e.response?.data.toString());
-        }
-      } else {
-        return Exception('Terjadi Kesalahan');
-      }
+  String get _baseUrl => dotenv.env['API_SERVER']!;
+  String? get _bearerToken => dotenv.env['TEMPORARY_TOKEN'];
+
+  Options _getOptions() {
+    if (_bearerToken == null || _bearerToken!.isEmpty) {
+      throw Exception('Bearer token is null or empty');
+    }
+    return Options(
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $_bearerToken'},
+    );
   }
 
-  Future<List<Document>> getList(int? month, int? year) async {
-    try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
-      Response response = await _dio.get(
-        "${dotenv.env['API_SERVER']!}/api/documents",
-        options: Options(
-          headers: {
-            HttpHeaders.authorizationHeader: 'Bearer $bearerToken',
-          },
-        ),
-        queryParameters: {
-          'month': month,
-          'year': year,
-        },
-      );
-      if (response.statusCode == 200) {
-        List<Document> list = [];
-        for (var item in response.data) {
-          list.add(Document.fromJson(item));
-        }
-        return list;
-      } else {
-        debugPrint(response.data.toString());
-        throw Exception('Terjadi Kesalahan');
-      }
-    } on DioException catch (e) {
-      debugPrint(e.toString());
-      throw dioExceptionHandler(e);
-    } catch (error) {
-      debugPrint(error.toString());
-      throw Exception('Terjadi Kesalahan');
-    } 
-  } 
+  Exception _handleDioError(DioError e) {
+    if (e.response?.data is Map && e.response?.data.containsKey('error')) {
+      return Exception(e.response?.data['error']);
+    } else if (e.response?.data is Map && e.response?.data.containsKey('message')) {
+      return Exception(e.response?.data['message']);
+    }
+    return Exception('An error occurred');
+  }
 
-  Future<Document> create(Document documents) async {
+  Future<List<Document>> getList() async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
-      // FormData data = FormData.fromMap(documents.toJson());
-      Response response = await _dio.post(
-        "${dotenv.env['API_SERVER']!}/api/documents",
-        options: Options(
-          headers: {
-            HttpHeaders.authorizationHeader: "Bearer $bearerToken",
-          },
-        ),
-        data: documents.toJson(),
+      final response = await _dio.get(
+        '$_baseUrl/api/document',
+        options: _getOptions(),
       );
-      if (response.statusCode != 201) {
-        throw Exception('Terjadi Kesalahan');
+      if (response.statusCode == HttpStatus.ok) {
+        final responseData = response.data;
+        if (responseData is String) {
+          final dataMap = json.decode(responseData) as Map<String, dynamic>;
+          return _parseDocuments(dataMap['data']);
+        } else if (responseData is Map<String, dynamic>) {
+          return _parseDocuments(responseData['data']);
+        } else {
+          throw Exception('Response data is not in the expected format');
+        }
+      } else {
+        throw Exception('Failed to fetch documents');
       }
-      return Document.fromJson(response.data);
-    } on DioException catch (e) {
-      throw dioExceptionHandler(e);
-    } catch (error) {
-      throw Exception('Terjadi Kesalahan');
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception('Failed to fetch documents');
     }
   }
 
-  Future<Document> update(Document documents) async {
+  List<Document> _parseDocuments(List<dynamic> data) {
+    return data.map((item) => Document.fromJson(item)).toList();
+  }
+
+  Future<Document> create(Document document) async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
-      FormData data = FormData.fromMap(documents.toJson());
-      if (documents.id == null) {
-        throw Exception('ID tidak boleh kosong');
-      }
-      Response response = await _dio.put(
-        "${dotenv.env['API_SERVER']!}/api/documents/${documents.id}",
-        options: Options(
-          headers: {
-            HttpHeaders.authorizationHeader: "Bearer $bearerToken",
-          },
-        ),
-        data: data,
+      final response = await _dio.post(
+        '$_baseUrl/api/document',
+        options: _getOptions(),
+        data: document.toJson(),
       );
-      if (response.statusCode != 200) {
-        throw Exception('Terjadi Kesalahan');
+
+      if (response.statusCode == HttpStatus.created || response.statusCode == HttpStatus.ok) {
+        final responseData = response.data;
+        if (responseData is Map<String, dynamic>) {
+          return Document.fromJson(responseData);
+        } else {
+          throw Exception('Response data is not in the expected format');
+        }
+      } else {
+        throw Exception('Failed to create document. Status code: ${response.statusCode}');
       }
-      return Document.fromJson(response.data);
-    } on DioException catch (e) {
-      throw dioExceptionHandler(e);
-    } catch (error) {
-      throw Exception('Terjadi Kesalahan');
+    } catch (e) {
+      debugPrint('Error adding document: $e');
+      throw Exception('Failed to create document. Error: $e');
+    }
+  }
+
+  Future<Document> update(Document document) async {
+    if (document.id == null) {
+      throw Exception('ID cannot be null');
+    }
+    try {
+      final response = await _dio.put(
+        '$_baseUrl/api/document/${document.id}',
+        options: _getOptions(),
+        data: document.toJson(),
+      );
+
+      if (response.statusCode == HttpStatus.ok) {
+        final responseData = response.data;
+        if (responseData is Map<String, dynamic>) {
+          return Document.fromJson(responseData);
+        } else {
+          throw Exception('Response data is not in the expected format');
+        }
+      } else {
+        throw Exception('Failed to update document');
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception('Failed to update document');
     }
   }
 
   Future<void> delete(int id) async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
-      Response response = await _dio.delete(
-        "${dotenv.env['API_SERVER']!}/api/documents/$id",
-        options: Options(
-          headers: {
-            HttpHeaders.authorizationHeader: "Bearer $bearerToken",
-          },
-        ),
+      final response = await _dio.delete(
+        '$_baseUrl/api/document/$id',
+        options: _getOptions(),
       );
-      if (response.statusCode != 200) {
-        throw Exception('Terjadi Kesalahan');
+
+      if (response.statusCode != HttpStatus.ok) {
+        throw Exception('Failed to delete document');
       }
-    } on DioException catch (e) {
-      throw dioExceptionHandler(e);
-    } catch (error) {
-      throw Exception('Terjadi Kesalahan');
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception('Failed to delete document');
     }
   }
 }
