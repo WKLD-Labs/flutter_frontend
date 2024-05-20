@@ -42,6 +42,7 @@ class _LoginPageState extends State<LoginPage>{
         final Map<String, dynamic> userData = await response.data;
         await storage.write(key: 'accessToken', value: userData['accessToken']);
         setAllowBiometrics();
+        loginContext.changeIsLogin();
         context.go('/');
       }
     } catch (e){

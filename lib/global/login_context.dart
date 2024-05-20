@@ -1,6 +1,7 @@
 library ase.login_context;
 
 bool allowBiometrics = false;
+bool isLogin = false;
 
 void changeAllowBiometrics() {
   allowBiometrics = !allowBiometrics;
@@ -8,4 +9,8 @@ void changeAllowBiometrics() {
 
 bool getAllowBiometrics() {
   return allowBiometrics;
+}
+
+void changeIsLogin() {
+  isLogin = !isLogin;
 }
