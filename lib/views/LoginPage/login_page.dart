@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../widgets/nav_drawer.dart';
+import '../../global/login_context.dart' as loginContext;
 
 final uri = dotenv.env['API_SERVER']!;
+const storage = FlutterSecureStorage();
 
 class LoginPage extends StatefulWidget{
   const LoginPage({super.key, required this.title});
@@ -22,6 +25,7 @@ class _LoginPageState extends State<LoginPage>{
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isFormEmpty = true;
+  bool isBiometricsAllowed = loginContext.getAllowBiometrics();
 
   final dio = Dio();
 
@@ -35,10 +39,22 @@ class _LoginPageState extends State<LoginPage>{
         },
       );
       if (response.statusCode == 200){
+        final Map<String, dynamic> userData = await response.data;
+        await storage.write(key: 'accessToken', value: userData['accessToken']);
+        setAllowBiometrics();
         context.go('/');
       }
     } catch (e){
       print(e);
+    }
+  }
+
+  void setAllowBiometrics() async {
+    if (await storage.read(key: 'accessToken') != null){
+      loginContext.changeAllowBiometrics();
+      setState(() {
+        isBiometricsAllowed = loginContext.getAllowBiometrics();
+      });
     }
   }
 
@@ -139,7 +155,7 @@ class _LoginPageState extends State<LoginPage>{
                             Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: ElevatedButton(
-                                  onPressed: _auth,
+                                  onPressed: isBiometricsAllowed ? _auth : null,
                                 child: const Icon(Icons.fingerprint),
                               ),
                             ),
