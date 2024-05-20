@@ -62,6 +62,7 @@ class _LoginPageState extends State<LoginPage>{
   void initState() {
     super.initState();
     _updateFormEmptyStatus();
+    setAllowBiometrics();
   }
 
   void _updateFormEmptyStatus(){
