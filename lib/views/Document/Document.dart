@@ -14,12 +14,14 @@ class _DocumentPageState extends State<DocumentPage> {
   List<Document> filteredDocuments = [];
   final DocumentsAPI api = DocumentsAPI();
   final TextEditingController searchController = TextEditingController();
+  String _filterSelection = 'All'; // Default filter selection
 
   @override
   void initState() {
     super.initState();
     _fetchDocuments();
   }
+
 
   void _fetchDocuments() async {
     try {
@@ -32,7 +34,7 @@ class _DocumentPageState extends State<DocumentPage> {
       print('Error fetching documents: $e');
     }
   }
-
+  
   void _deleteDocument(int documentId) async {
     try {
       await api.delete(documentId);
@@ -55,6 +57,7 @@ class _DocumentPageState extends State<DocumentPage> {
       setState(() {
         documents.add(newDocument);
         filteredDocuments.add(newDocument);
+        _fetchDocuments();
       });
     } catch (e) {
       print('Error adding document: $e');
@@ -78,13 +81,20 @@ class _DocumentPageState extends State<DocumentPage> {
 
   void _filterDocuments(String query) {
     setState(() {
-      if (query.isEmpty) {
+      if (query.isEmpty && _filterSelection == 'All') {
         filteredDocuments = documents;
+      } else if (query.isEmpty && _filterSelection == 'Borrowed') {
+        filteredDocuments = documents.where((document) => document.borrower != null).toList();
+      } else if (query.isEmpty && _filterSelection == 'Available') {
+        filteredDocuments = documents.where((document) => document.borrower == null).toList();
       } else {
         filteredDocuments = documents
             .where((document) =>
-                document.title.toLowerCase().contains(query.toLowerCase()) ||
-                (document.writer?.toLowerCase().contains(query.toLowerCase()) ?? false))
+                (document.title.toLowerCase().contains(query.toLowerCase()) ||
+                    (document.writer?.toLowerCase().contains(query.toLowerCase()) ?? false)) &&
+                (_filterSelection == 'All' ||
+                    (_filterSelection == 'Borrowed' && document.borrower != null) ||
+                    (_filterSelection == 'Available' && document.borrower == null)))
             .toList();
       }
     });
@@ -102,6 +112,13 @@ class _DocumentPageState extends State<DocumentPage> {
           SearchBar(
             controller: searchController,
             onSearch: _filterDocuments,
+            filterSelection: _filterSelection,
+            onFilterChanged: (value) {
+              setState(() {
+                _filterSelection = value;
+                _filterDocuments(searchController.text);
+              });
+            },
           ),
           Expanded(
             child: DocumentBody(
@@ -249,8 +266,7 @@ class _DocumentDetailsDialogState extends State<DocumentDetailsDialog> {
     super.initState();
     _titleController = TextEditingController(text: widget.document.title);
     _writerController = TextEditingController(text: widget.document.writer);
-    _descriptionController =
-        TextEditingController(text: widget.document.description);
+    _descriptionController = TextEditingController(text: widget.document.description);
     _borrowController = TextEditingController(text: widget.document.borrower);
   }
 
@@ -302,10 +318,10 @@ class _DocumentDetailsDialogState extends State<DocumentDetailsDialog> {
               title: _titleController.text,
               writer: _writerController.text,
               description: _descriptionController.text,
-              status: _borrowController.text.isEmpty ? true : widget.document.status,
+              status: _borrowController.text.isEmpty ? true : false,
               borrower: _borrowController.text.isNotEmpty ? _borrowController.text : null,
               createdAt: widget.document.createdAt,
-              updatedAt: DateTime.now(), // Update the timestamp
+              updatedAt: DateTime.now(), 
             );
             widget.onUpdate(updatedDocument);
             Navigator.of(context).pop();
@@ -416,7 +432,7 @@ class CardItem extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Close'),
+              child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold),),
             ),
           ],
         );
@@ -425,15 +441,24 @@ class CardItem extends StatelessWidget {
   }
 }
 
-class SearchBar extends StatelessWidget {
+class SearchBar extends StatefulWidget {
   final TextEditingController controller;
   final Function(String) onSearch;
+  final String filterSelection;
+  final Function(String) onFilterChanged;
 
   const SearchBar({
     required this.controller,
     required this.onSearch,
+    required this.filterSelection,
+    required this.onFilterChanged,
   });
 
+  @override
+  _SearchBarState createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<SearchBar> {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -442,23 +467,40 @@ class SearchBar extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(8.0),
             child: TextFormField(
-              controller: controller,
+              controller: widget.controller,
               decoration: InputDecoration(
                 hintText: 'Search...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),
               ),
-              onChanged: onSearch,
+              onChanged: (value) {
+                widget.onSearch(value);
+              },
             ),
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {
-            // Call onSearch with current search query
-            onSearch(controller.text);
+        DropdownButton<String>(
+          value: widget.filterSelection,
+          onChanged: (value) {
+            if (value != null) {
+              widget.onFilterChanged(value);
+            }
           },
+          items: [
+            DropdownMenuItem(
+              value: 'All',
+              child: Text('All'),
+            ),
+            DropdownMenuItem(
+              value: 'Borrowed',
+              child: Text('Borrowed'),
+            ),
+            DropdownMenuItem(
+              value: 'Available',
+              child: Text('Available'),
+            ),
+          ],
         ),
       ],
     );
