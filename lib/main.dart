@@ -6,7 +6,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'views/Document/Document.dart';
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
+import 'views/JadwalPage/jadwal_page.dart';
+import 'views/AgendaPage/agenda_page.dart';
 import 'views/LoginPage/login_page.dart';
+import 'views/DaftarPertemuan/pertemuan_page.dart';
+import 'views/InventoryPage/invetory_page.dart';
 import 'views/MemberPage/member_page.dart';
 import 'views/RoomSchedule/room_schedule.dart';
 
@@ -32,18 +36,48 @@ final GoRouter _router = GoRouter(
           },
         ),
         GoRoute(
+          path: 'jadwal',
+          builder: (BuildContext context, GoRouterState state) {
+            return const JadwalPage(title: 'Flutter Demo Jadwal Page');
+          },
+        ),
+        GoRoute(
+          path: 'agenda',
+          builder: (BuildContext context, GoRouterState state) {
+            return const AgendaPage(title: 'Flutter Demo Agenda Page');
+          },
+        ),
+        GoRoute(
           path: 'login',
           builder: (BuildContext context, GoRouterState state){
             return const LoginPage(title: 'Login Page');
           },
         ),
         GoRoute(
+          path: 'pertemuan',
+          builder: (BuildContext context, GoRouterState state){
+            return const DaftarPertemuan(title: 'Daftar Pertemuan');
+          },
+        ),
+        GoRoute(
+          path: 'inventory',
+          builder: (BuildContext context, GoRouterState state){
+            return const InventoryPage(title: 'Inventory Page');
+          },
+        ),
+        GoRoute(
           path: 'member',
           builder: (BuildContext context, GoRouterState state){
             return const MemberPage(title: 'Member Page');
+          },
+        ),
+        GoRoute(
           path: 'roomschedule',
           builder: (BuildContext context, GoRouterState state) {
             return const RoomSchedule();
+          },
+        ),
+        GoRoute(
           path: 'document',
           builder: (BuildContext context, GoRouterState state) {
             return DocumentPage();
