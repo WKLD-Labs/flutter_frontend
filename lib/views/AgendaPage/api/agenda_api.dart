@@ -33,7 +33,7 @@ class AgendaAPI{
     try {
       String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
       Response response = await _dio.get(
-        "${dotenv.env['API_SERVER']!}/api/roomschedule",
+        "${dotenv.env['API_SERVER']!}/api/agenda",
         options: Options(
           headers: {
             HttpHeaders.authorizationHeader: 'Bearer $bearerToken',
