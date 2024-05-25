@@ -52,7 +52,7 @@ class _RoomScheduleState extends State<RoomSchedule> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
-          title: const Text('Jadwal Pelihaaran'),
+          title: const Text('Jadwal Ruangan'),
           bottom: const TabBar(
             tabs: [
               Tab(
@@ -68,11 +68,23 @@ class _RoomScheduleState extends State<RoomSchedule> {
         ),
         body: TabBarView(
             children: <Widget>[
-              ScheduleCalendar(
-                month: currentMonth,
-                year: currentYear,
-                onCalendarChanged: onCalendarChanged,
-                onRefresh: fetchRoomSchedules,
+              FutureBuilder<List<RoomScheduleModel>>(
+                future: futureRoomSchedules,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return ScheduleCalendar(
+                      month: currentMonth,
+                      year: currentYear,
+                      onCalendarChanged: onCalendarChanged,
+                      onRefresh: fetchRoomSchedules,
+                      schedules: snapshot.data!,
+                    );
+                  } else if (snapshot.hasError) {
+                    debugPrint(snapshot.error.toString());
+                    return Center(child: TextButton(onPressed: fetchRoomSchedules, child: const Text('Error fetching data')));
+                  }
+                  return const Center(child: CircularProgressIndicator());
+                },
               ),
               FutureBuilder<List<RoomScheduleModel>>(
                 future: futureRoomSchedules,

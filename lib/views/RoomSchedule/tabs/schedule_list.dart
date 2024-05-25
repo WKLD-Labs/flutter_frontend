@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:intl/intl.dart';
 import 'package:wkldlabs_flutter_frontend/views/RoomSchedule/api/room_schedule_api.dart';
@@ -20,7 +21,7 @@ class ScheduleList extends StatelessWidget {
       children: [
         RefreshIndicator(
           onRefresh: onRefresh,
-          child: ListView.separated(
+          child: calendarData.isEmpty ? ListView(padding: const EdgeInsets.all(16), children: const [Center(child: Text('Tidak ada jadwal untuk bulan ini'))],) : ListView.separated(
             itemCount: calendarData.length,
             separatorBuilder: (context, index) => const Divider(
               thickness: 1,

@@ -12,24 +12,38 @@ class ScheduleCalendar extends StatefulWidget {
     required this.year,
     required this.onCalendarChanged,
     required this.onRefresh,
+    required this.schedules,
   });
 
   final int month;
   final int year;
   final Function(int, int) onCalendarChanged;
   final Future<void> Function() onRefresh;
+  final List<RoomScheduleModel> schedules;
 
   @override
   State<ScheduleCalendar> createState() => _ScheduleCalendarState();
 }
 
 class _ScheduleCalendarState extends State<ScheduleCalendar> {
-  late CrCalendarController _calendarController = CrCalendarController(
-    onSwipe: _onCalendarSwipe,
-  );
+  late CrCalendarController _calendarController;
 
   void _onCalendarSwipe(int year, int month) {
     widget.onCalendarChanged(year, month);
+  }
+
+  @override
+  void initState() {
+    List<CalendarEventModel> ScheduleCalendarList = widget.schedules.map(
+      (e) => CalendarEventModel(name: e.name, begin: e.startDate, end: e.endDate),
+    ).toList();
+    setState(() {
+      _calendarController = CrCalendarController(
+        onSwipe: _onCalendarSwipe,
+        events: ScheduleCalendarList,
+      );
+    });
+    super.initState();
   }
 
   @override
