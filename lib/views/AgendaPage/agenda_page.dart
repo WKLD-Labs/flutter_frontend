@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-import '../../widgets/nav_drawer.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:cr_calendar/cr_calendar.dart';
+
+import './models/agenda_model.dart';
+import './api/agenda_api.dart';
 
 class AgendaPage extends StatefulWidget {
   const AgendaPage({Key? key, required this.title}) : super(key: key);
@@ -12,120 +17,279 @@ class AgendaPage extends StatefulWidget {
 }
 
 class _AgendaPageState extends State<AgendaPage> {
-  late DateTime _selectedDate;
-  late DateTime _currentMonth;
+  int currentMonth = DateTime.now().month;
+  int currentYear = DateTime.now().year;
+  Future<List<AgendaModel>>? futureAgenda;
+
+  void onCalendarChanged(int year, int month) {
+    setState(() {
+      currentMonth = month;
+      currentYear = year;
+    });
+    loadAgenda();
+  }
+  void loadAgenda() {
+    setState(() {
+      
+      futureAgenda = AgendaAPI().getList();
+    });
+  }
 
   @override
   void initState() {
+    loadAgenda();
     super.initState();
-    _selectedDate = DateTime.now();
-    _currentMonth = DateTime.now();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(widget.title),
       ),
-      body: Center(
+      body: FutureBuilder<List<AgendaModel>>(
+          future: futureAgenda,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return AgendaCalendar(
+                      month: currentMonth,
+                      year: currentYear,
+                      onCalendarChanged: onCalendarChanged,
+                      onRefresh: loadAgenda,
+                      agenda: snapshot.data!,
+                    );
+            } else if (snapshot.hasError) {
+              debugPrint(snapshot.error.toString());
+              return Center(
+                  child: TextButton(
+                      onPressed: loadAgenda,
+                      child: const Text('Error fetching data')));
+            }
+            return const Center(child: CircularProgressIndicator());
+          }),
+      /*floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => AddKegiatanPage(),
+            ),
+          );
+          if (result != null) {
+            setState(() {
+              kegiatanList.add(result);
+            });
+          }
+        },
+        child: Icon(Icons.add),
+      ),*/
+    );
+  }
+}
+
+class AgendaCalendar extends StatefulWidget {
+  const AgendaCalendar({
+    super.key,
+    required this.month,
+    required this.year,
+    required this.onCalendarChanged,
+    required this.onRefresh,
+    required this.agenda,
+  });
+
+  final int month;
+  final int year;
+  final Function(int, int) onCalendarChanged;
+  final Function() onRefresh;
+  final List<AgendaModel> agenda;
+  
+  @override
+  State<AgendaCalendar> createState() => _AgendaCalendarState();
+}
+
+class _AgendaCalendarState extends State<AgendaCalendar> {
+  late CrCalendarController _calendarController;
+
+  void _onCalendarSwipe(int year, int month) {
+    widget.onCalendarChanged(year, month);
+  }
+
+  @override
+  void initState() {
+    List<CalendarEventModel> agendaCalendarList = widget.agenda.map(
+      (e) => CalendarEventModel(name: e.name, begin: e.startDate, end: e.endDate),
+    ).toList();
+    setState(() {
+      _calendarController = CrCalendarController(
+        onSwipe: _onCalendarSwipe,
+        events: agendaCalendarList,
+      );
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            SizedBox(height: 10),
+          children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
+              children: [
                 IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _currentMonth = DateTime(
-                          _currentMonth.year, _currentMonth.month - 1, 1);
-                    });
-                  },
-                  icon: Icon(Icons.arrow_back),
+                  onPressed: _calendarController.swipeToPreviousPage,
+                  icon: const Icon(Icons.arrow_back),
                 ),
-                Text(
-                  '${_currentMonth.month}/${_currentMonth.year}',
-                  style: TextStyle(fontSize: 20),
+                TextButton(
+                  onPressed: () => _calendarController.goToDate(DateTime.now()),
+                  child: Text(
+                    DateFormat(DateFormat.YEAR_MONTH).format(DateTime(widget.year, widget.month)),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _currentMonth = DateTime(
-                          _currentMonth.year, _currentMonth.month + 1, 1);
-                    });
-                  },
-                  icon: Icon(Icons.arrow_forward),
+                  onPressed: _calendarController.swipeToNextMonth,
+                  icon: const Icon(Icons.arrow_forward),
                 ),
               ],
             ),
-            SizedBox(height: 10),
-            GridView.builder(
-              shrinkWrap: true,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-              ),
-              itemCount: _daysInMonth(_currentMonth),
-              itemBuilder: (context, index) {
-                final dayOfMonth = index - _firstDayOfMonth(_currentMonth) + 1;
-                final day = DateTime(_currentMonth.year, _currentMonth.month, dayOfMonth);
-
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedDate = day;
-                    });
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: _isSelectedDay(day) ? Colors.blue : null,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '$dayOfMonth',
-                      style: TextStyle(
-                        color: _isCurrentMonth(day) ? Colors.black : Colors.grey,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+            Expanded(child: CrCalendar(controller: _calendarController, initialDate: DateTime.now(), )),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Tambahkan fungsi untuk menambahkan data di sini
-        },
-        tooltip: 'Add Data',
-        child: Icon(Icons.add),
-      ),
-      endDrawer: NavDrawer(context),
     );
   }
+}
 
-  bool _isCurrentMonth(DateTime day) {
-    return day.month == _currentMonth.month;
-  }
+/*
+class AddKegiatanPage extends StatefulWidget {
+  @override
+  _AddKegiatanPageState createState() => _AddKegiatanPageState();
+}
 
-  bool _isSelectedDay(DateTime day) {
-    return day.year == _selectedDate.year &&
-        day.month == _selectedDate.month &&
-        day.day == _selectedDate.day;
-  }
+class _AddKegiatanPageState extends State<AddKegiatanPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _judulController = TextEditingController();
+  final _deskripsiController = TextEditingController();
+  DateTime? _selectedDate;
+  TimeOfDay? _waktuMulai;
+  TimeOfDay? _waktuAkhir;
 
-  int _firstDayOfMonth(DateTime month) {
-    return DateTime(month.year, month.month, 1).weekday % 7;
-  }
-
-  int _daysInMonth(DateTime month) {
-    final nextMonth = month.month < 12 ? month.month + 1 : 1;
-    final nextYear = nextMonth == 1 ? month.year + 1 : month.year;
-    return DateTime(nextYear, nextMonth, 0).day + _firstDayOfMonth(month);
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Tambah Kegiatan'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _judulController,
+                  decoration: InputDecoration(labelText: 'Judul'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Judul tidak boleh kosong';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _deskripsiController,
+                  decoration: InputDecoration(labelText: 'Deskripsi'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Deskripsi tidak boleh kosong';
+                    }
+                    return null;
+                  },
+                ),
+                ListTile(
+                  title: Text(_selectedDate == null
+                      ? 'Pilih Tanggal'
+                      : DateFormat('yyyy-MM-dd').format(_selectedDate!)),
+                  trailing: Icon(Icons.calendar_today),
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (date != null) {
+                      setState(() {
+                        _selectedDate = date;
+                      });
+                    }
+                  },
+                ),
+                ListTile(
+                  title: Text(_waktuMulai == null
+                      ? 'Pilih Waktu Mulai'
+                      : _waktuMulai!.format(context)),
+                  trailing: Icon(Icons.access_time),
+                  onTap: () async {
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (time != null) {
+                      setState(() {
+                        _waktuMulai = time;
+                      });
+                    }
+                  },
+                ),
+                ListTile(
+                  title: Text(_waktuAkhir == null
+                      ? 'Pilih Waktu Akhir'
+                      : _waktuAkhir!.format(context)),
+                  trailing: Icon(Icons.access_time),
+                  onTap: () async {
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (time != null) {
+                      setState(() {
+                        _waktuAkhir = time;
+                      });
+                    }
+                  },
+                ),
+                SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate() &&
+                          _selectedDate != null &&
+                          _waktuMulai != null &&
+                          _waktuAkhir != null) {
+                        final newKegiatan = Kegiatan(
+                          judul: _judulController.text,
+                          deskripsi: _deskripsiController.text,
+                          tanggal: _selectedDate!,
+                          waktuMulai: _waktuMulai!,
+                          waktuAkhir: _waktuAkhir!,
+                        );
+                        Navigator.of(context).pop(newKegiatan);
+                      }
+                    },
+                    child: Text('Tambah'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
+*/
