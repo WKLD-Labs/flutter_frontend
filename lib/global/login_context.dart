@@ -1,16 +1,31 @@
-library ase.login_context;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-bool allowBiometrics = false;
-bool isLogin = false;
+class LoginContext {
+  static bool allowBiometrics = false;
+  static bool isLogin = false;
+  static const storage = FlutterSecureStorage();
 
-void changeAllowBiometrics() {
-  allowBiometrics = !allowBiometrics;
-}
+  static void changeAllowBiometrics() {
+    allowBiometrics = !allowBiometrics;
+  }
 
-bool getAllowBiometrics() {
-  return allowBiometrics;
-}
+  static bool getAllowBiometrics() {
+    return allowBiometrics;
+  }
 
-void changeIsLogin() {
-  isLogin = !isLogin;
+  static void changeIsLogin() {
+    isLogin = !isLogin;
+  }
+
+  static bool getIsLogin() {
+    return isLogin;
+  }
+
+  static Future<void> setToken(String token) async {
+    await storage.write(key: 'accessToken', value: token);
+  }
+
+  static Future<String?> getToken() async {
+    return await storage.read(key: 'accessToken');
+  }
 }

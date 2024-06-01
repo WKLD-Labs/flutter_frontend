@@ -5,8 +5,8 @@ import 'package:local_auth/local_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
 import '../../widgets/nav_drawer.dart';
-import '../../global/login_context.dart' as loginContext;
 
 final uri = dotenv.env['API_SERVER']!;
 const storage = FlutterSecureStorage();
@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage>{
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isFormEmpty = true;
-  bool isBiometricsAllowed = loginContext.getAllowBiometrics();
+  bool isBiometricsAllowed = LoginContext.getAllowBiometrics();
 
   final dio = Dio();
 
@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage>{
         final Map<String, dynamic> userData = await response.data;
         await storage.write(key: 'accessToken', value: userData['accessToken']);
         setAllowBiometrics();
-        loginContext.changeIsLogin();
+        LoginContext.changeIsLogin();
         context.go('/');
       }
     } catch (e){
@@ -52,9 +52,9 @@ class _LoginPageState extends State<LoginPage>{
 
   void setAllowBiometrics() async {
     if (await storage.read(key: 'accessToken') != null){
-      loginContext.changeAllowBiometrics();
+      LoginContext.changeAllowBiometrics();
       setState(() {
-        isBiometricsAllowed = loginContext.getAllowBiometrics();
+        isBiometricsAllowed = LoginContext.getAllowBiometrics();
       });
     }
   }
