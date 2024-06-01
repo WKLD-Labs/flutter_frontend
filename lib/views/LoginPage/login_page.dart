@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage>{
       );
       if (response.statusCode == 200){
         final Map<String, dynamic> userData = await response.data;
-        await storage.write(key: 'accessToken', value: userData['accessToken']);
+        LoginContext.setToken(userData['accessToken']);
         setAllowBiometrics();
         LoginContext.changeIsLogin();
         context.go('/');
