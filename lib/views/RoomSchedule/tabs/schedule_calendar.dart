@@ -29,22 +29,43 @@ class _ScheduleCalendarState extends State<ScheduleCalendar> {
   late CrCalendarController _calendarController;
 
   void _onCalendarSwipe(int year, int month) {
+    debugPrint("Currently ${widget.year}, ${widget.month}");
     widget.onCalendarChanged(year, month);
+  }
+
+  CrCalendarController _updateCalendar(List<RoomScheduleModel> schedules) {
+    List<CalendarEventModel> scheduleCalendarList = widget.schedules.map(
+      (e) => CalendarEventModel(name: e.name, begin: e.startDate, end: e.endDate),
+    ).toList();
+    _calendarController.events?.clear();
+    _calendarController.events?.addAll(scheduleCalendarList);
+    _calendarController.clearSelected();
+    return _calendarController;
   }
 
   @override
   void initState() {
-    List<CalendarEventModel> ScheduleCalendarList = widget.schedules.map(
+    
+    List<CalendarEventModel> scheduleCalendarList = widget.schedules.map(
       (e) => CalendarEventModel(name: e.name, begin: e.startDate, end: e.endDate),
     ).toList();
     setState(() {
       _calendarController = CrCalendarController(
         onSwipe: _onCalendarSwipe,
-        events: ScheduleCalendarList,
+        events: scheduleCalendarList,
       );
     });
     super.initState();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _onCalendarSwipe(DateTime.now().year, DateTime.now().month));
   }
+
+  // @override
+  // void didChangeDependencies() {
+  //   debugPrint("changedep")
+  //   _updateCalendar();
+  //   super.didChangeDependencies();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +94,7 @@ class _ScheduleCalendarState extends State<ScheduleCalendar> {
                 ),
               ],
             ),
-            Expanded(child: CrCalendar(controller: _calendarController, initialDate: DateTime.now(), )),
+            Expanded(child: CrCalendar(controller: _updateCalendar(widget.schedules), initialDate: DateTime.now()), ),
           ],
         ),
       ),
