@@ -87,7 +87,6 @@ final GoRouter _router = GoRouter(
         ),
       ],
       redirect: (context, state) {
-        debugPrint('aaaaa');
         NavDrawer.loginListener.update(LoginContext.getIsLogin());
         return null;
       },

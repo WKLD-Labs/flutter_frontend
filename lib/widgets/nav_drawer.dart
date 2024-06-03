@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginListener with ChangeNotifier {
@@ -33,14 +32,11 @@ class NavDrawer extends StatelessWidget {
     //   'Dummy', Icon(Icons.egg_outlined), Icon(Icons.egg), '/dummy'
     // ),
     _NavigationDestination(
-      'Jadwal', Icon(Icons.egg_outlined), Icon(Icons.calendar_today), '/jadwal'
+      'Jadwal', Icon(Icons.calendar_today), Icon(Icons.calendar_today), '/jadwal'
     ),
     _NavigationDestination(
-      'Agenda', Icon(Icons.egg_outlined), Icon(Icons.calendar_month), '/agenda'
+      'Agenda', Icon(Icons.calendar_month), Icon(Icons.calendar_month), '/agenda'
     ),
-    // _NavigationDestination(
-    //   'Login', Icon(Icons.login_outlined), Icon(Icons.login), '/login'
-    // ),
     _NavigationDestination(
         'Pertemuan', Icon(Icons.event_outlined), Icon(Icons.event), '/pertemuan'
     ),
