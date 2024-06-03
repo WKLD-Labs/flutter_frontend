@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
-
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
 import '../../widgets/nav_drawer.dart';
+
+final uri = dotenv.env['API_SERVER']!;
+const storage = FlutterSecureStorage();
 
 class LoginPage extends StatefulWidget{
   const LoginPage({super.key, required this.title});
@@ -19,11 +25,45 @@ class _LoginPageState extends State<LoginPage>{
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isFormEmpty = true;
+  bool isBiometricsAllowed = LoginContext.getAllowBiometrics();
+
+  final dio = Dio();
+
+  void login() async {
+    try {
+      final response = await dio.post(
+        '$uri/api/login',
+        data: {
+          'username': usernameController.text,
+          'password': passwordController.text,
+        },
+      );
+      if (response.statusCode == 200){
+        final Map<String, dynamic> userData = await response.data;
+        LoginContext.setToken(userData['accessToken']);
+        setAllowBiometrics();
+        LoginContext.changeIsLogin();
+        context.go('/');
+      }
+    } catch (e){
+      print(e);
+    }
+  }
+
+  void setAllowBiometrics() async {
+    if (await storage.read(key: 'accessToken') != null){
+      LoginContext.changeAllowBiometrics();
+      setState(() {
+        isBiometricsAllowed = LoginContext.getAllowBiometrics();
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _updateFormEmptyStatus();
+    setAllowBiometrics();
   }
 
   void _updateFormEmptyStatus(){
@@ -108,14 +148,16 @@ class _LoginPageState extends State<LoginPage>{
                           children: [
                             ElevatedButton(
                               onPressed: isFormEmpty ? null : (){
-                                context.go('/');
+                                if (_formKey.currentState!.validate()){
+                                  login();
+                                }
                               },
                               child: const Text('Submit'),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: ElevatedButton(
-                                  onPressed: _auth,
+                                  onPressed: isBiometricsAllowed ? _auth : null,
                                 child: const Icon(Icons.fingerprint),
                               ),
                             ),
