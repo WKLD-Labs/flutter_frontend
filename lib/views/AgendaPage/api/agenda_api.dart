@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
+import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
 import 'dart:io';
 // import 'package:flutter/foundation.dart';
 
@@ -31,7 +32,7 @@ class AgendaAPI{
 
   Future<List<AgendaModel>> getList() async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
+      String bearerToken = (await LoginContext.getToken())!;
       Response response = await _dio.get(
         "${dotenv.env['API_SERVER']!}/api/agenda",
         options: Options(
@@ -61,7 +62,7 @@ class AgendaAPI{
 
   Future<AgendaModel> create(AgendaModel agendaModel) async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
+      String bearerToken = (await LoginContext.getToken())!;
       // FormData data = FormData.fromMap(roomSchedule.toJson());
       Response response = await _dio.post(
         "${dotenv.env['API_SERVER']!}/api/agenda",
