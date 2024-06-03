@@ -73,7 +73,7 @@ class _AgendaPageState extends State<AgendaPage> {
           context: context,
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
-            return const NewAgendaDialog();
+            return NewAgendaDialog(onSubmit: loadAgenda,);
           },
         ),
         tooltip: 'Jadwal Baru',
@@ -120,7 +120,15 @@ class AgendaCalendar extends StatefulWidget {
 
 class _AgendaCalendarState extends State<AgendaCalendar> {
   late CrCalendarController _calendarController;
-
+  CrCalendarController _updateCalendar(List<AgendaModel> agenda) {
+    List<CalendarEventModel> scheduleCalendarList = agenda.map(
+      (e) => CalendarEventModel(name: e.name, begin: e.startDate, end: e.endDate),
+    ).toList();
+    _calendarController.events?.clear();
+    _calendarController.events?.addAll(scheduleCalendarList);
+    _calendarController.clearSelected();
+    return _calendarController;
+  }
   void _onCalendarSwipe(int year, int month) {
     widget.onCalendarChanged(year, month);
   }
@@ -169,7 +177,7 @@ class _AgendaCalendarState extends State<AgendaCalendar> {
             ),
             Expanded(
               child: CrCalendar(
-                controller: _calendarController,
+                controller: _updateCalendar(widget.agenda),
                 initialDate: DateTime.now(),
                 
               )
@@ -181,17 +189,23 @@ class _AgendaCalendarState extends State<AgendaCalendar> {
   }
 }
 class NewAgendaDialog extends StatefulWidget {
-  const NewAgendaDialog({super.key});
-
+  const NewAgendaDialog({
+    super.key,
+    required this.onSubmit,
+    });
+  final Function() onSubmit;
   @override
   State<NewAgendaDialog> createState() => _NewAgendaDialogState();
 }
 
 class _NewAgendaDialogState extends State<NewAgendaDialog> {
+  final _formKey = GlobalKey<FormState>();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now().add(const Duration(days: 1));
   static final DateFormat dateFormatter = DateFormat('dd MMMM yyyy');
   static final DateFormat timeFormatter = DateFormat('HH.mm');
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -199,6 +213,37 @@ class _NewAgendaDialogState extends State<NewAgendaDialog> {
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nama Agenda',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Nama Agenda tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Deskripsi',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Deskripsi tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
             const Text('Pilih Tanggal:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
             TextButton(
               onPressed: () async {
@@ -280,8 +325,27 @@ class _NewAgendaDialogState extends State<NewAgendaDialog> {
           ),
           TextButton(
             child: const Text('Simpan'),
-            onPressed: () {
-              Navigator.of(context).pop();
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                AgendaModel newSchedule = AgendaModel(
+                  name: nameController.text,
+                  description: descriptionController.text,
+                  startDate: startDate,
+                  endDate: endDate,
+                );
+                try {
+                  await AgendaAPI().create(newSchedule);
+                  widget.onSubmit();
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(e.toString()),
+                  ));
+                }
+                
+                
+              }
             },
           ),
         ],
