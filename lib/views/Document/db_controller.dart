@@ -3,26 +3,28 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
 import 'model.dart';
 
 class DocumentsAPI {
   static final DocumentsAPI _instance = DocumentsAPI._constructor();
   static final Dio _dio = Dio();
+  
   factory DocumentsAPI() {
     return _instance;
   }
+
   DocumentsAPI._constructor();
 
   String get _baseUrl => dotenv.env['API_SERVER']!;
-  String? get _bearerToken => dotenv.env['TEMPORARY_TOKEN'];
 
-  Options _getOptions() {
-    if (_bearerToken == null || _bearerToken!.isEmpty) {
+  Future<Options> _getOptions() async {
+    String? bearerToken = await LoginContext.getToken();
+    if (bearerToken == null || bearerToken.isEmpty) {
       throw Exception('Bearer token is null or empty');
     }
     return Options(
-      headers: {HttpHeaders.authorizationHeader: 'Bearer $_bearerToken'},
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $bearerToken'},
     );
   }
 
@@ -39,7 +41,7 @@ class DocumentsAPI {
     try {
       final response = await _dio.get(
         '$_baseUrl/api/document',
-        options: _getOptions(),
+        options: await _getOptions(),
       );
       if (response.statusCode == HttpStatus.ok) {
         final responseData = response.data;
@@ -68,7 +70,7 @@ class DocumentsAPI {
     try {
       final response = await _dio.post(
         '$_baseUrl/api/document',
-        options: _getOptions(),
+        options: await _getOptions(),
         data: document.toJson(),
       );
 
@@ -95,7 +97,7 @@ class DocumentsAPI {
     try {
       final response = await _dio.put(
         '$_baseUrl/api/document/${document.id}',
-        options: _getOptions(),
+        options: await _getOptions(),
         data: document.toJson(),
       );
 
@@ -119,7 +121,7 @@ class DocumentsAPI {
     try {
       final response = await _dio.delete(
         '$_baseUrl/api/document/$id',
-        options: _getOptions(),
+        options: await _getOptions(),
       );
 
       if (response.statusCode != HttpStatus.ok) {
