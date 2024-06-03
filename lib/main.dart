@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:wkldlabs_flutter_frontend/widgets/nav_drawer.dart';
+import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
 
 // Views for Routing
 import 'views/Document/Document.dart';
@@ -84,6 +86,11 @@ final GoRouter _router = GoRouter(
           },
         ),
       ],
+      redirect: (context, state) {
+        debugPrint('aaaaa');
+        NavDrawer.loginListener.update(LoginContext.getIsLogin());
+        return null;
+      },
     ),
   ],
 );
