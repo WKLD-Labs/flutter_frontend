@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:wkldlabs_flutter_frontend/widgets/nav_drawer.dart';
+import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
 
 
 
@@ -8,6 +10,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'views/Document/Document.dart';
 import 'views/HomePage/home_page.dart';
 import 'views/DummyPage/dummy_page.dart';
+import 'views/JadwalPage/jadwal_page.dart';
+import 'views/AgendaPage/agenda_page.dart';
 import 'views/LoginPage/login_page.dart';
 import 'views/DaftarPertemuan/pertemuan_page.dart';
 import 'views/InventoryPage/invetory_page.dart';
@@ -33,6 +37,18 @@ final GoRouter _router = GoRouter(
           path: 'dummy',
           builder: (BuildContext context, GoRouterState state) {
             return const DummyPage(title: 'Flutter Demo Dummy Page');
+          },
+        ),
+        GoRoute(
+          path: 'jadwal',
+          builder: (BuildContext context, GoRouterState state) {
+            return const JadwalPage(title: 'Flutter Demo Jadwal Page');
+          },
+        ),
+        GoRoute(
+          path: 'agenda',
+          builder: (BuildContext context, GoRouterState state) {
+            return const AgendaPage(title: 'Flutter Demo Agenda Page');
           },
         ),
         GoRoute(
@@ -72,6 +88,10 @@ final GoRouter _router = GoRouter(
           },
         ),
       ],
+      redirect: (context, state) {
+        NavDrawer.loginListener.update(LoginContext.getIsLogin());
+        return null;
+      },
     ),
   ],
 );
