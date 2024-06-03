@@ -66,7 +66,19 @@ class _AgendaPageState extends State<AgendaPage> {
                       child: const Text('Error fetching data')));
             }
             return const Center(child: CircularProgressIndicator());
-          }),
+          }
+        ),
+        floatingActionButton: FloatingActionButton(
+        onPressed: () => showDialog<void>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return const NewAgendaDialog();
+          },
+        ),
+        tooltip: 'Jadwal Baru',
+        child: const Icon(Icons.add),
+      ),
       /*floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.of(context).push(
@@ -125,6 +137,7 @@ class _AgendaCalendarState extends State<AgendaCalendar> {
       );
     });
     super.initState();
+    
   }
 
   @override
@@ -154,14 +167,127 @@ class _AgendaCalendarState extends State<AgendaCalendar> {
                 ),
               ],
             ),
-            Expanded(child: CrCalendar(controller: _calendarController, initialDate: DateTime.now(), )),
+            Expanded(
+              child: CrCalendar(
+                controller: _calendarController,
+                initialDate: DateTime.now(),
+                
+              )
+            ),
           ],
         ),
       ),
     );
   }
 }
+class NewAgendaDialog extends StatefulWidget {
+  const NewAgendaDialog({super.key});
 
+  @override
+  State<NewAgendaDialog> createState() => _NewAgendaDialogState();
+}
+
+class _NewAgendaDialogState extends State<NewAgendaDialog> {
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now().add(const Duration(days: 1));
+  static final DateFormat dateFormatter = DateFormat('dd MMMM yyyy');
+  static final DateFormat timeFormatter = DateFormat('HH.mm');
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+        title: const Text('Agenda Baru'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+            const Text('Pilih Tanggal:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            TextButton(
+              onPressed: () async {
+                DateTimeRange? dateRange = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                    lastDate: DateTime.now().add(const Duration(days: 365)));
+                if (dateRange != null) {
+                  setState(() {
+                    startDate = DateTime(
+                      dateRange.start.year,
+                      dateRange.start.month,
+                      dateRange.start.day,
+                      startDate.hour,
+                      startDate.minute,
+                      startDate.second,
+                    );
+                    endDate = DateTime(
+                      dateRange.end.year,
+                      dateRange.end.month,
+                      dateRange.end.day,
+                      endDate.hour,
+                      endDate.minute,
+                      endDate.second,
+                    );
+                  });
+                }
+              },
+              child: Column(
+                children: [
+                  Text("Mulai: ${dateFormatter.format(startDate)}"),
+                  Text("Akhir: ${dateFormatter.format(endDate)}"),
+                ],
+              ),
+            ),
+             const Text('Jam Mulai:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            TextButton(
+                onPressed: () async {
+                  TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                  if (newTime != null) {
+                    setState(() {
+                      startDate = DateTime(
+                        startDate.year,
+                        startDate.month,
+                        startDate.day,
+                        newTime.hour,
+                        newTime.minute,
+                      );
+                    });
+                  }
+                },
+                child: Text(timeFormatter.format(startDate), style: const TextStyle(fontSize: 24),)),
+            const Text('Jam Akhir:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            TextButton(
+                onPressed: () async {
+                  TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                  if (newTime != null) {
+                    setState(() {
+                      endDate = DateTime(
+                        endDate.year,
+                        endDate.month,
+                        endDate.day,
+                        newTime.hour,
+                        newTime.minute,
+                      );
+                    });
+                  }
+                },
+                child: Text(timeFormatter.format(endDate), style: const TextStyle(fontSize: 24),),)
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Batal'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Simpan'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+  }
+}
 /*
 class AddKegiatanPage extends StatefulWidget {
   @override

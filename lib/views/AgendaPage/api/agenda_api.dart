@@ -58,4 +58,28 @@ class AgendaAPI{
       throw Exception('Terjadi Kesalahan');
     } 
   } 
+
+  Future<AgendaModel> create(AgendaModel agendaModel) async {
+    try {
+      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
+      // FormData data = FormData.fromMap(roomSchedule.toJson());
+      Response response = await _dio.post(
+        "${dotenv.env['API_SERVER']!}/api/agenda",
+        options: Options(
+          headers: {
+            HttpHeaders.authorizationHeader: "Bearer $bearerToken",
+          },
+        ),
+        data: agendaModel.toJson(),
+      );
+      if (response.statusCode != 201) {
+        throw Exception('Terjadi Kesalahan');
+      }
+      return AgendaModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw dioExceptionHandler(e);
+    } catch (error) {
+      throw Exception('Terjadi Kesalahan');
+    }
+  }
 }
