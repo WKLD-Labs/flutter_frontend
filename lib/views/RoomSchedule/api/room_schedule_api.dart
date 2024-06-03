@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 import 'dart:io';
+import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
 // import 'package:flutter/foundation.dart';
 
 
@@ -31,7 +32,7 @@ class RoomScheduleAPI {
 
   Future<List<RoomScheduleModel>> getList(int? month, int? year) async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
+      String bearerToken = (await LoginContext.getToken())!;
       Response response = await _dio.get(
         "${dotenv.env['API_SERVER']!}/api/roomschedule",
         options: Options(
@@ -65,7 +66,7 @@ class RoomScheduleAPI {
 
   Future<RoomScheduleModel> create(RoomScheduleModel roomSchedule) async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
+      String bearerToken = (await LoginContext.getToken())!;
       // FormData data = FormData.fromMap(roomSchedule.toJson());
       Response response = await _dio.post(
         "${dotenv.env['API_SERVER']!}/api/roomschedule",
@@ -89,7 +90,7 @@ class RoomScheduleAPI {
 
   Future<RoomScheduleModel> update(RoomScheduleModel roomSchedule) async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
+      String bearerToken = (await LoginContext.getToken())!;
       if (roomSchedule.id == null) {
         throw Exception('ID tidak boleh kosong');
       }
@@ -115,7 +116,7 @@ class RoomScheduleAPI {
 
   Future<void> delete(int id) async {
     try {
-      String bearerToken = dotenv.env['TEMPORARY_TOKEN']!;
+      String bearerToken = (await LoginContext.getToken())!;
       Response response = await _dio.delete(
         "${dotenv.env['API_SERVER']!}/api/roomschedule/$id",
         options: Options(
