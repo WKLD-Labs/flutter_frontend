@@ -1,4 +1,4 @@
-class RoomScheduleModel {
+class AgendaModel {
   final int? id;
   final String name;
   final String description;
@@ -7,7 +7,7 @@ class RoomScheduleModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  const RoomScheduleModel({
+  const AgendaModel({
     this.id,
     required this.name,
     required this.description,
@@ -17,8 +17,8 @@ class RoomScheduleModel {
     this.updatedAt,
   });
 
-  factory RoomScheduleModel.fromJson(Map<String, dynamic> json) {
-    return RoomScheduleModel(
+  factory AgendaModel.fromJson(Map<String, dynamic> json) {
+    return AgendaModel(
       id: json['id'],
       name: json['name'],
       description: json['description'],
