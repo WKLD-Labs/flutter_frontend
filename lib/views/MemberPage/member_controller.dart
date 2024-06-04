@@ -4,16 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:wkldlabs_flutter_frontend/views/MemberPage/member_model.dart';
 
-class MeetingController {
+class MemberController {
   final Dio _dio = Dio();
 
-  MeetingController() {
+  MemberController() {
     dotenv.load();
     _dio.options.baseUrl =
         dotenv.env['API_BASE_URL'] ?? 'http://localhost:5500/api/';
   }
 
-  Future<List<MemberData>> fetchMeetings() async {
+  Future<List<MemberData>> fetchMembers() async {
     try {
       var headers = {
         'Authorization':
@@ -31,15 +31,15 @@ class MeetingController {
         debugPrint('Response data: ${response.data}');
         return MemberData.membersFromJson(json.encode(response.data));
       } else {
-        throw Exception('Failed to load meetings');
+        throw Exception('Failed to load member');
       }
     } on DioError catch (e) {
-      debugPrint('Error fetching meetings: $e');
-      throw Exception('Failed to load meetings');
+      debugPrint('Error fetching member: $e');
+      throw Exception('Failed to load member');
     }
   }
 
-  Future<Meeting> createMeeting() async {
+  Future<MemberData> createMember() async {
     try {
       var headers = {
         'Content-Type': 'application/json',
@@ -47,17 +47,14 @@ class MeetingController {
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzE3NDI1MDA5LCJleHAiOjE3MTgwMjk4MDl9.-S4ryYWaVz8ioDUT3W-g5yKa7MxUbuAxR-qgH7wgu8A'
       };
       var data = json.encode({
-        "meetingname": "coba",
-        "speaker": "coba ",
-        "datetime": "2024-05-14T18:50:41.000Z",
-        "meetinglink": "coba",
-        "description": "coba",
-        "createdAt": "2024-05-26T13:50:40.000Z",
-        "updatedAt": "2024-05-26T13:50:40.000Z"
+        "name": "Habli Zulvana Ath-Thaariq",
+        "studentId": "1302210024",
+        "className": "SE-45-03",
+        "department": "Rekayasa Perangkat Lunak",
       });
       var dio = Dio();
       var response = await dio.request(
-        'http://localhost:5500/api/pertemuan',
+        'http://localhost:5500/api/member',
         options: Options(
           method: 'POST',
           headers: headers,
@@ -66,42 +63,42 @@ class MeetingController {
       );
 
       if (response.statusCode == 201) {
-        return Meeting.fromJson(response.data);
+        return MemberData.fromJson(response.data);
       } else {
-        throw Exception('Failed to create meeting');
+        throw Exception('Failed to create member');
       }
     } on DioError catch (e) {
-      debugPrint('Error creating meeting: $e');
-      throw Exception('Failed to create meeting');
+      debugPrint('Error creating member: $e');
+      throw Exception('Failed to create member');
     }
   }
 
-  Future<Meeting> updateMeeting(Meeting meeting) async {
+  Future<MemberData> updateMember(MemberData member) async {
     try {
       final response = await _dio.put(
-        '/pertemuan/${meeting.id}',
-        data: meeting.toJson(),
+        '/member/${member.id}',
+        data: member.toJson(),
       );
       if (response.statusCode == 200) {
-        return Meeting.fromJson(response.data);
+        return MemberData.fromJson(response.data);
       } else {
-        throw Exception('Failed to update meeting');
+        throw Exception('Failed to update member');
       }
     } on DioError catch (e) {
-      debugPrint('Error updating meeting: $e');
-      throw Exception('Failed to update meeting');
+      debugPrint('Error updating member: $e');
+      throw Exception('Failed to update member');
     }
   }
 
-  Future<void> deleteMeeting(int id) async {
+  Future<void> deleteMember(int id) async {
     try {
-      final response = await _dio.delete('/pertemuan/$id');
+      final response = await _dio.delete('/member/$id');
       if (response.statusCode != 200) {
-        throw Exception('Failed to delete meeting');
+        throw Exception('Failed to delete member');
       }
     } on DioError catch (e) {
-      debugPrint('Error deleting meeting: $e');
-      throw Exception('Failed to delete meeting');
+      debugPrint('Error deleting member: $e');
+      throw Exception('Failed to delete member');
     }
   }
 }

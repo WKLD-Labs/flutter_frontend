@@ -14,22 +14,69 @@ class MemberPage extends StatefulWidget {
 }
 
 class _MemberPageState extends State<MemberPage> {
+  final MemberController _memberController = MemberController();
+  List<MemberData> members = [];
+  bool isLoading = true;
   bool isDialogVisible = false;
-  List<Map<String, dynamic>> memberData = [];
-  Map<String, dynamic> selectedData = {};
+  Map<String, dynamic>? selectedData;
   bool showView = false;
-  bool isSubmitting = false;
+  int? selectedIndex;
 
   @override
   void initState() {
     super.initState();
-    _fetchMemberData;
+    _fetchMemberData();
   }
 
-  void handleCreate(Map<String, dynamic> data) {
-    setState(() {
-      memberData.add(data);
-    });
+  Future<void> _fetchMemberData() async {
+    try {
+      final fetchedMembers = await _memberController.fetchMembers();
+      setState(() {
+        members = fetchedMembers;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching members: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void handleCreate(Map<String, dynamic> data) async {
+    try {
+      final newMember = await _memberController.createMember();
+      setState(() {
+        members.add(newMember);
+      });
+    } catch (e) {
+      debugPrint('Error creating member: $e');
+    }
+  }
+
+  void handleUpdate(MemberData member) async {
+    try {
+      final updatedMember = await _memberController.updateMember(member);
+      setState(() {
+        int index = members.indexWhere((e) => e.id == updatedMember.id);
+        if (index != -1) {
+          members[index] = updatedMember;
+        }
+      });
+    } catch (e) {
+      debugPrint('Error updating member: $e');
+    }
+  }
+
+  void handleDelete(int id) async {
+    try {
+      await _memberController.deleteMember(id);
+      setState(() {
+        members.removeWhere((members) => members.id == id);
+      });
+    } catch (e) {
+      debugPrint('Error deleting member: $e');
+    }
   }
 
   @override
@@ -39,213 +86,197 @@ class _MemberPageState extends State<MemberPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Stack(
               children: [
-                DataTable(
-                  columns: [
-                    DataColumn(label: Text('Nama')),
-                    DataColumn(label: Text('NIM')),
-                    DataColumn(label: Text('Kelas')),
-                    DataColumn(label: Text('Jurusan')),
-                  ],
-                  rows: memberData
-                      .map(
-                        (data) => DataRow(
-                          cells: [
-                            DataCell(
-                              Text(data['name'] ?? ''),
-                              onTap: () {
-                                setState(() {
-                                  selectedData = data;
-                                  showView = true;
-                                });
-                              },
-                            ),
-                            DataCell(Text(data['nim'] ?? '')),
-                            DataCell(Text(data['class'] ?? '')),
-                            DataCell(Text(data['major'] ?? '')),
-                          ],
-                        ),
-                      )
-                      .toList(),
-                ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      isDialogVisible = true;
-                      selectedData = {};
-                    });
-                  },
-                  child: Text('New Member'),
-                ),
-                SizedBox(height: 16),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: memberData.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedData = memberData[index];
-                          showView = true;
-                        });
-                      },
-                      child: Container(),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          if (isDialogVisible)
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-              child: AlertDialog(
-                title: Text('New Member'),
-                content: SingleChildScrollView(
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextFormField(
-                        decoration: InputDecoration(labelText: 'Nama'),
-                        onChanged: (value) => _handleChange('name', value),
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(labelText: 'NIM'),
-                        onChanged: (value) => _handleChange('nim', value),
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(labelText: 'Kelas'),
-                        onChanged: (value) => _handleChange('class', value),
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(labelText: 'Jurusan'),
-                        onChanged: (value) => _handleChange('major', value),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: members.length,
+                        separatorBuilder: (BuildContext context, int index) {
+                          return SizedBox(height: 8);
+                        },
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedData = members[index].toJson();
+                                showView = true;
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    members[index].name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  PopupMenuButton<String>(
+                                    onSelected: (String choice) {
+                                      if (choice == 'hapus') {
+                                        handleDelete(members[index].id!);
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) {
+                                      return ['hapus'].map((String choice) {
+                                        return PopupMenuItem<String>(
+                                          value: choice,
+                                          child: Text(choice),
+                                        );
+                                      }).toList();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
                 ),
-                actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _handleSubmit();
-                    },
-                    child: Text('Save'),
+                if (isDialogVisible)
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                    child: AlertDialog(
+                      title: Text('New Member'),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextFormField(
+                              decoration: InputDecoration(labelText: 'Nama'),
+                              onChanged: (value) => handleChange('name', value),
+                            ),
+                            TextFormField(
+                              decoration: InputDecoration(labelText: 'NIM'),
+                              onChanged: (value) => handleChange('studentId', value),
+                            ),
+                            TextFormField(
+                              decoration: InputDecoration(labelText: 'Kelas'),
+                              onChanged: (value) => handleChange('className', value),
+                            ),
+                            TextFormField(
+                              decoration: InputDecoration(labelText: 'Jurusan'),
+                              onChanged: (value) => handleChange('department', value),
+                            ),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () {
+                            handleSubmit();
+                          },
+                          child: Text('Save'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            handleClose();
+                          },
+                          child: Text('Close'),
+                        ),
+                      ],
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      _handleClose();
-                    },
-                    child: Text('Close'),
+                if (showView)
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                    child: AlertDialog(
+                      title: Text(selectedData!['name']),
+                      content: SingleChildScrollView(
+                        child: ListBody(
+                          children: <Widget>[
+                            Text("NIM: ${selectedData!['studentId']}"),
+                            Text("Kelas: ${selectedData!['className']}"),
+                            Text("Jurusan: ${selectedData!['department']}"),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              showView = false;
+                            });
+                          },
+                          child: Text('Close'),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+              ],
             ),
-          if (showView)
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-              child: ViewMemberData(
-                showDialog: showView,
-                setShowDialog: (value) => setState(() => showView = value),
-                data: selectedData,
-              ),
-            ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            isDialogVisible = true;
+            selectedData = {};
+          });
+        },
+        child: Icon(Icons.add),
+        shape: CircleBorder(),
+        backgroundColor: Colors.white,
       ),
       endDrawer: NavDrawer(context),
     );
   }
 
-  void _handleChange(String field, String value) {
+  void handleChange(String field, String value) {
     setState(() {
-      selectedData[field] = value;
+      if (selectedData != null) {
+        selectedData![field] = value;
+      }
     });
   }
 
-  void _handleSubmit() {
-    if (isSubmitting) return;
-
-    if (selectedData['name'] != null &&
-        selectedData['nim'] != null &&
-        selectedData['class'] != null &&
-        selectedData['major'] != null) {
+  void handleSubmit() {
+    if (selectedData != null && selectedData!.length == 6) {
+      final members = MemberData.fromJson(selectedData!);
+      handleCreate();
       setState(() {
-        isSubmitting = true;
-        addMember(selectedData).then((_) {
-          handleCreate(selectedData);
-          isDialogVisible = false;
-          isSubmitting = false;
-          selectedData = {};
-        }).catchError((error) {
-          isSubmitting = false;
-          print(error);
-        });
+        isDialogVisible = false;
+        selectedData = null;
       });
     } else {
-      print('Some fields are still Blanks');
+      showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Please complete all fields before saving.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
-  void _handleClose() {
+  void handleClose() {
     setState(() {
       isDialogVisible = false;
-      selectedData = {};
+      selectedData = null;
     });
-  }
-}
-
-class ViewMemberData extends StatelessWidget {
-  final bool showDialog;
-  final Function(bool) setShowDialog;
-  final Map<String, dynamic> data;
-
-  const ViewMemberData({
-    Key? key,
-    required this.showDialog,
-    required this.setShowDialog,
-    required this.data,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              data['name'] ?? '',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text('Nama: ${data['name']?.toString() ?? ''}'),
-            Text('NIM: ${data['nim']?.toString() ?? ''}'),
-            Text('Kelas: ${data['class']?.toString() ?? ''}'),
-            Text('Jurusan: ${data['major']?.toString() ?? ''}'),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton(
-                  onPressed: () => setShowDialog(false),
-                  child: Text('Close'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

@@ -34,12 +34,13 @@ class MemberData {
       'department': department,
     };
   }
-  List<MemberData> membersFromJson(String jsonData) {
+  
+  static List<MemberData> membersFromJson(String jsonData) {
     final data = json.decode(jsonData);
     return List<MemberData>.from(data.map((item) => MemberData.fromJson(item)));
   }
 
-  String membersToJson(List<MemberData> data) {
+  static String membersToJson(List<MemberData> data) {
     final jsonData = data.map((item) => item.toJson()).toList();
     return json.encode(jsonData);
   }
