@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'member_controller.dart';
+import 'member_model.dart';
 import '../../widgets/nav_drawer.dart';
 
 class MemberPage extends StatefulWidget {
@@ -13,44 +15,15 @@ class MemberPage extends StatefulWidget {
 
 class _MemberPageState extends State<MemberPage> {
   bool isDialogVisible = false;
-  List<Map<String, dynamic>> memberData = [
-    {
-      'Nama': 'Habli Zulvana Ath-Thaariq',
-      'NIM': '1302210024',
-      'Kelas': 'SE-45-03',
-      'Jurusan': 'Software Engineering',
-    },
-    {
-      'Nama': 'Pricilla Ramadhanri Anggista Putri',
-      'NIM': '1302210023',
-      'Kelas': 'SE-45-03',
-      'Jurusan': 'Software Engineering',
-    },
-  ];
+  List<Map<String, dynamic>> memberData = [];
   Map<String, dynamic> selectedData = {};
   bool showView = false;
   bool isSubmitting = false;
 
-  void updateMemberData() async {
-    // Contoh simulasi fetching data dari API
-    await Future.delayed(Duration(seconds: 2));
-    setState(() {
-      memberData = [
-        {
-          'Nama': 'Habli Zulvana Ath-Thaariq',
-          'NIM': '1302210024',
-          'Kelas': 'SE-45-03',
-          'Jurusan': 'Software Engineering',
-        },
-        {
-          'Nama': 'Pricilla Ramadhanri Anggista Putri',
-          'NIM': '1302210023',
-          'Kelas': 'SE-45-03',
-          'Jurusan': 'Software Engineering',
-        },
-        // Tambahkan data anggota lainnya jika diperlukan
-      ];
-    });
+  @override
+  void initState() {
+    super.initState();
+    _fetchMemberData;
   }
 
   void handleCreate(Map<String, dynamic> data) {
@@ -85,7 +58,7 @@ class _MemberPageState extends State<MemberPage> {
                         (data) => DataRow(
                           cells: [
                             DataCell(
-                              Text(data['Nama'] ?? ''),
+                              Text(data['name'] ?? ''),
                               onTap: () {
                                 setState(() {
                                   selectedData = data;
@@ -93,9 +66,9 @@ class _MemberPageState extends State<MemberPage> {
                                 });
                               },
                             ),
-                            DataCell(Text(data['NIM'] ?? '')),
-                            DataCell(Text(data['Kelas'] ?? '')),
-                            DataCell(Text(data['Jurusan'] ?? '')),
+                            DataCell(Text(data['nim'] ?? '')),
+                            DataCell(Text(data['class'] ?? '')),
+                            DataCell(Text(data['major'] ?? '')),
                           ],
                         ),
                       )
@@ -106,7 +79,7 @@ class _MemberPageState extends State<MemberPage> {
                   onPressed: () {
                     setState(() {
                       isDialogVisible = true;
-                      selectedData = {}; // Initialize selectedData
+                      selectedData = {};
                     });
                   },
                   child: Text('New Member'),
@@ -123,8 +96,7 @@ class _MemberPageState extends State<MemberPage> {
                           showView = true;
                         });
                       },
-                      child: Container(                
-                      ),
+                      child: Container(),
                     );
                   },
                 ),
@@ -142,19 +114,19 @@ class _MemberPageState extends State<MemberPage> {
                     children: [
                       TextFormField(
                         decoration: InputDecoration(labelText: 'Nama'),
-                        onChanged: (value) => _handleChange('Nama', value),
+                        onChanged: (value) => _handleChange('name', value),
                       ),
                       TextFormField(
                         decoration: InputDecoration(labelText: 'NIM'),
-                        onChanged: (value) => _handleChange('NIM', value),
+                        onChanged: (value) => _handleChange('nim', value),
                       ),
                       TextFormField(
                         decoration: InputDecoration(labelText: 'Kelas'),
-                        onChanged: (value) => _handleChange('Kelas', value),
+                        onChanged: (value) => _handleChange('class', value),
                       ),
                       TextFormField(
                         decoration: InputDecoration(labelText: 'Jurusan'),
-                        onChanged: (value) => _handleChange('Jurusan', value),
+                        onChanged: (value) => _handleChange('major', value),
                       ),
                     ],
                   ),
@@ -197,29 +169,33 @@ class _MemberPageState extends State<MemberPage> {
   }
 
   void _handleSubmit() {
-    if (isSubmitting) return; // Prevent multiple submissions
+    if (isSubmitting) return;
 
-    if (selectedData['Nama'] != null &&
-        selectedData['NIM'] != null &&
-        selectedData['Kelas'] != null &&
-        selectedData['Jurusan'] != null) {
+    if (selectedData['name'] != null &&
+        selectedData['nim'] != null &&
+        selectedData['class'] != null &&
+        selectedData['major'] != null) {
       setState(() {
-        isSubmitting = true; // Set submitting to true
-        handleCreate(selectedData);
-        isDialogVisible = false;
-        isSubmitting = false; // Reset submitting state
-        selectedData = {}; // Reset selectedData after adding the member
+        isSubmitting = true;
+        addMember(selectedData).then((_) {
+          handleCreate(selectedData);
+          isDialogVisible = false;
+          isSubmitting = false;
+          selectedData = {};
+        }).catchError((error) {
+          isSubmitting = false;
+          print(error);
+        });
       });
     } else {
-      // Handle case where some fields are still null (optional)
-      print('Some fields are still null');
+      print('Some fields are still Blanks');
     }
   }
 
   void _handleClose() {
     setState(() {
       isDialogVisible = false;
-      selectedData = {}; // Reset selectedData when closing the dialog
+      selectedData = {};
     });
   }
 }
@@ -246,17 +222,17 @@ class ViewMemberData extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              data['Nama'] ?? '',
+              data['name'] ?? '',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 8),
-            Text('Nama: ${data['Nama']?.toString() ?? ''}'), // Add null check for Nama
-            Text('NIM: ${data['NIM']?.toString() ?? ''}'), // Add null check for NIM
-            Text('Kelas: ${data['Kelas']?.toString() ?? ''}'), // Add null check for Kelas
-            Text('Jurusan: ${data['Jurusan']?.toString() ?? ''}'), // Add null check for Jurusan
+            Text('Nama: ${data['name']?.toString() ?? ''}'),
+            Text('NIM: ${data['nim']?.toString() ?? ''}'),
+            Text('Kelas: ${data['class']?.toString() ?? ''}'),
+            Text('Jurusan: ${data['major']?.toString() ?? ''}'),
             SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
