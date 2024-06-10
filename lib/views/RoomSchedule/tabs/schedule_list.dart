@@ -28,7 +28,7 @@ class ScheduleList extends StatelessWidget {
               color: Colors.grey,
             ),
             itemBuilder: (context, index) => ListTile(
-              title: Text(calendarData[index].name),
+              title: Text(calendarData[index].name, style: (DateTime.now().isAfter(calendarData[index].startDate) && DateTime.now().isBefore(calendarData[index].endDate)) ? const TextStyle(fontWeight: FontWeight.bold) : null),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
