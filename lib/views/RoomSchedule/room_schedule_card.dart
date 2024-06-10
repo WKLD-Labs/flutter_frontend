@@ -16,6 +16,7 @@ class RoomScheduleToday extends StatefulWidget {
 class _RoomScheduleTodayState extends State<RoomScheduleToday> {
   Future<List<RoomScheduleModel>>? future;
   DateTime? today;
+  bool isLoggedin = false;
 
   void loadRoomSchedules() {
     setState(() {
@@ -26,13 +27,18 @@ class _RoomScheduleTodayState extends State<RoomScheduleToday> {
 
   @override
   void initState() {
+    LoginContext.getIsLogin().then((value) {
+      setState(() {
+        isLoggedin = value;
+      });
+    },);
     loadRoomSchedules();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!LoginContext.getIsLogin()) return const SizedBox();
+    if (!isLoggedin) return const SizedBox();
     return FutureBuilder<List<RoomScheduleModel>>(future: future, builder: (context, snapshot) {
       if (snapshot.hasData) {
         List<RoomScheduleModel> data = snapshot.data!;
