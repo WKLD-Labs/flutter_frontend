@@ -18,10 +18,8 @@ class _RoomScheduleTodayState extends State<RoomScheduleToday> {
   DateTime? today;
 
   void loadRoomSchedules() {
-    debugPrint("fetch homepage");
     setState(() {
       today = DateTime.now();
-      debugPrint(today.toString());
       future = RoomScheduleAPI().getList(today!.month, today!.year);
     });
   }
@@ -40,10 +38,8 @@ class _RoomScheduleTodayState extends State<RoomScheduleToday> {
         List<RoomScheduleModel> data = snapshot.data!;
         List<RoomScheduleModel> todaySchedules = data.where((schedule) => (today!.isAfter(schedule.startDate) && today!.isBefore(schedule.endDate))).toList();
         RoomScheduleModel? currentSchedule;
-        debugPrint(data.toString());
-        if (todaySchedules.length > 0) {
+        if (todaySchedules.isNotEmpty) {
           currentSchedule = todaySchedules[0];
-          debugPrint(currentSchedule.toString());
         }
         return Card(
           margin: EdgeInsets.fromLTRB(24, 12, 24, 6),
