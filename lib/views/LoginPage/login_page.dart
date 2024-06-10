@@ -25,38 +25,25 @@ class _LoginPageState extends State<LoginPage>{
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isFormEmpty = true;
-  bool isBiometricsAllowed = LoginContext.getAllowBiometrics();
+  bool? isBiometricsAllowed;
 
   final dio = Dio();
 
   void login() async {
     try {
-      final response = await dio.post(
-        '$uri/api/login',
-        data: {
-          'username': usernameController.text,
-          'password': passwordController.text,
-        },
-      );
-      if (response.statusCode == 200){
-        final Map<String, dynamic> userData = await response.data;
-        LoginContext.setToken(userData['accessToken']);
-        setAllowBiometrics();
-        LoginContext.changeIsLogin();
-        context.go('/');
-      }
+      await LoginContext.login(usernameController.text, passwordController.text);
+      if (!context.mounted) return;
+      context.go('/');
     } catch (e){
       print(e);
     }
   }
 
   void setAllowBiometrics() async {
-    if (await storage.read(key: 'accessToken') != null){
-      LoginContext.changeAllowBiometrics();
-      setState(() {
-        isBiometricsAllowed = LoginContext.getAllowBiometrics();
-      });
-    }
+    var allowed = await LoginContext.isBiometricsAllowed();
+    setState(() {
+      isBiometricsAllowed = allowed;
+    });
   }
 
   @override
@@ -64,6 +51,7 @@ class _LoginPageState extends State<LoginPage>{
     super.initState();
     _updateFormEmptyStatus();
     setAllowBiometrics();
+
   }
 
   void _updateFormEmptyStatus(){
@@ -80,7 +68,9 @@ class _LoginPageState extends State<LoginPage>{
     } on PlatformException catch (e) {
       print(e);
     }
+    debugPrint(authenticated.toString());
     if (authenticated){
+      LoginContext.biometricsLogin();
       context.go('/');
     }
   }
@@ -157,7 +147,7 @@ class _LoginPageState extends State<LoginPage>{
                             Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: ElevatedButton(
-                                  onPressed: isBiometricsAllowed ? _auth : null,
+                                  onPressed: isBiometricsAllowed != null && isBiometricsAllowed! ? _auth : null,
                                 child: const Icon(Icons.fingerprint),
                               ),
                             ),

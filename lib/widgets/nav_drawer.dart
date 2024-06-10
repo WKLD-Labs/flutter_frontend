@@ -51,7 +51,10 @@ class NavDrawer extends StatelessWidget {
     ),
     _NavigationDestination(
       'Member', Icon(Icons.person_2_outlined), Icon(Icons.person_2), '/member'
-      ),
+    ),
+    _NavigationDestination(
+        'Logout', Icon(Icons.logout_outlined), Icon(Icons.logout), '/logout'
+    ),
   ];
 
   static const List<_NavigationDestination> _loggedOutDestinations = <_NavigationDestination>[

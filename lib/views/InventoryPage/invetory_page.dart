@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:wkldlabs_flutter_frontend/views/InventoryPage/API/inventory_api.dart';
+import 'API/inventory_api.dart';
+import 'Model/inventory_model.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class InventoryPage extends StatefulWidget{
   const InventoryPage({super.key, required this.title});
@@ -10,220 +16,44 @@ class InventoryPage extends StatefulWidget{
 }
 
 class _InventoryPageState extends State<InventoryPage> {
-  List<Map<String, dynamic>> data = [
-    {
-      'id': '1',
-      'name': 'Item 1',
-      'description': 'Description 1',
-      'unit': 1,
-      'date': '2 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '2',
-      'name': 'Item 2',
-      'description': 'Description 2',
-      'unit': 2,
-      'date': '3 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '3',
-      'name': 'Item 3',
-      'description': 'Description 3',
-      'unit': 3,
-      'date': '4 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '4',
-      'name': 'Item 4',
-      'description': 'Description 4',
-      'unit': 4,
-      'date': '5 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '5',
-      'name': 'Item 5',
-      'description': 'Description 5',
-      'unit': 5,
-      'date': '6 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '6',
-      'name': 'Item 6',
-      'description': 'Description 6',
-      'unit': 6,
-      'date': '7 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '7',
-      'name': 'Item 7',
-      'description': 'Description 7',
-      'unit': 7,
-      'date': '8 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '8',
-      'name': 'Item 8',
-      'description': 'Description 8',
-      'unit': 8,
-      'date': '9 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '9',
-      'name': 'Item 9',
-      'description': 'Description 9',
-      'unit': 9,
-      'date': '10 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '10',
-      'name': 'Item 10',
-      'description': 'Description 10',
-      'unit': 10,
-      'date': '11 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '11',
-      'name': 'Item 11',
-      'description': 'Description 11',
-      'unit': 11,
-      'date': '12 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '12',
-      'name': 'Item 12',
-      'description': 'Description 12',
-      'unit': 12,
-      'date': '13 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '13',
-      'name': 'Item 13',
-      'description': 'Description 13',
-      'unit': 13,
-      'date': '14 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '14',
-      'name': 'Item 14',
-      'description': 'Description 14',
-      'unit': 14,
-      'date': '15 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '15',
-      'name': 'Item 15',
-      'description': 'Description 15',
-      'unit': 15,
-      'date': '16 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '16',
-      'name': 'Item 16',
-      'description': 'Description 16',
-      'unit': 16,
-      'date': '17 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '17',
-      'name': 'Item 17',
-      'description': 'Description 17',
-      'unit': 17,
-      'date': '18 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '18',
-      'name': 'Item 18',
-      'description': 'Description 18',
-      'unit': 18,
-      'date': '19 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '19',
-      'name': 'Item 19',
-      'description': 'Description 19',
-      'unit': 19,
-      'date': '20 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '20',
-      'name': 'Item 20',
-      'description': 'Description 20',
-      'unit': 20,
-      'date': '21 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '21',
-      'name': 'Item 21',
-      'description': 'Description 21',
-      'unit': 21,
-      'date': '22 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '22',
-      'name': 'Item 22',
-      'description': 'Description 22',
-      'unit': 22,
-      'date': '23 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '23',
-      'name': 'Item 23',
-      'description': 'Description 23',
-      'unit': 23,
-      'date': '24 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '24',
-      'name': 'Item 24',
-      'description': 'Description 24',
-      'unit': 24,
-      'date': '25 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
-    {
-      'id': '25',
-      'name': 'Item 25',
-      'description': 'Description 25',
-      'unit': 25,
-      'date': '26 April 2024',
-      'image': 'https://source.unsplash.com/640x360?funny-animals',
-    },
+  List<Inventory> data = [];
+  DateTime selectedDate = DateTime.now();
+  File? _image;
+  String? _uploadedFileURL;
+  final picker = ImagePicker();
+  final TextEditingController _nameEditingController = TextEditingController();
+  final TextEditingController _descriptionEditingController = TextEditingController();
+  final TextEditingController _unitEditingController = TextEditingController();
 
-  ];
+
+  Map<String, dynamic> newData = {
+    'name': '',
+    'description': '',
+    'unit': 0,
+    'date': DateTime.now(),
+    'image': '',
+  };
+
+  Map<String, dynamic> selectedData = {
+    'id': '',
+    'name': '',
+    'description': '',
+    'unit': 0,
+    'date': DateTime.now(),
+    'image': '',
+  };
 
   static const _pageSize = 15;
 
-  final PagingController<int, Map<String, dynamic>> _pagingController = PagingController(firstPageKey: 0);
+  final PagingController<int, Inventory> _pagingController = PagingController(firstPageKey: 0);
 
   Future<void> _fetchData(int pageKey) async {
     try {
+      data = await InventoryAPI().readAll();
       final start = pageKey * _pageSize;
       final end = start + _pageSize;
       final isLastPage = end >= data.length;
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
       final response = data.skip(start).take(_pageSize).toList();
       if (isLastPage) {
         _pagingController.appendLastPage(response);
@@ -236,6 +66,90 @@ class _InventoryPageState extends State<InventoryPage> {
     }
   }
 
+  void _addInventory() async {
+    try {
+      if (_image == null) return;
+
+      FirebaseStorage storage = FirebaseStorage.instance;
+      Reference ref = storage.ref().child('uploads/${DateTime.now().toString()}');
+      UploadTask uploadTask = ref.putFile(_image!);
+      TaskSnapshot taskSnapshot = await uploadTask;
+      _uploadedFileURL = await taskSnapshot.ref.getDownloadURL();
+      setState(() {
+        newData['image'] = _uploadedFileURL;
+        print('Uploaded Image URL: $_uploadedFileURL');
+      });
+      await InventoryAPI().create(Inventory(
+        name: newData['name'],
+        description: newData['description'],
+        unit: newData['unit'],
+        date: newData['date'],
+        image: newData['image'],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+      _pagingController.refresh();
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  void _updateInventory() async {
+    try {
+      await InventoryAPI().update(Inventory(
+        id: selectedData['id'],
+        name: selectedData['name'],
+        description: selectedData['description'],
+        unit: selectedData['unit'],
+        date: selectedData['date'],
+        image: selectedData['image'],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+      _pagingController.refresh();
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  void _deleteInventory(int id) async {
+    try {
+      await InventoryAPI().delete(id);
+      _pagingController.refresh();
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  Future pickImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future<String> uploadFile() async {
+    if (_image == null) throw Exception('No file selected');
+    String? _fileUri;
+    FirebaseStorage storage = FirebaseStorage.instance;
+    Reference ref = storage.ref().child('uploads/${DateTime.now().toString()}');
+    UploadTask uploadTask = ref.putFile(_image!);
+
+    uploadTask.then((res) async {
+      _uploadedFileURL = await res.ref.getDownloadURL();
+      setState(() {
+        print('Uploaded Image URL: $_uploadedFileURL');
+      });
+      _fileUri = _uploadedFileURL;
+      return _fileUri;
+    });
+    return _fileUri!;
+  }
 
 
 
@@ -248,107 +162,355 @@ class _InventoryPageState extends State<InventoryPage> {
     super.initState();
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        newData['date'] = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: PagedListView<int, Map<String, dynamic>>(
-        pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Map<String, dynamic>>(
-          itemBuilder: (context, item, index) {
-            return ListTile(
-              title: Text(item['name']),
-              subtitle: Text(item['description']),
-              leading: Image.network(item['image']),
-              onTap: () {
-                // View data dialog
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return SizedBox(
-                      height: 300,
-                      child: AlertDialog(
-                        title: const Text('View Data'),
-                        content: Column(
-                          children: <Widget>[
-                            Text('Name: ${item['name']}'),
-                            Text('Description: ${item['description']}'),
-                            Text('Unit: ${item['unit']}'),
-                            Text('Date: ${item['date']}'),
-                            Image.network(item['image']),
-                          ],
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.title),
+        ),
+        body: PagedListView<int, Inventory>(
+          pagingController: _pagingController,
+          builderDelegate: PagedChildBuilderDelegate<Inventory>(
+            itemBuilder: (context, item, index) {
+              return ListTile(
+                title: Text(item.name),
+                subtitle: Text('Jumlah Item: '+item.unit.toString()),
+                leading: Container(
+                  width: 50.0, // Set the width of the container
+                  height: 50.0, // Set the height of the container
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(item.image),
+                      fit: BoxFit.cover, // Ensures the image covers the container
+                    ),
+                  ),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            _nameEditingController.text = item.name;
+                            _descriptionEditingController.text = item.description;
+                            _unitEditingController.text = item.unit.toString();
+
+                            // Set the selected data map with the item's data
+                            selectedData = {
+                              'id': item.id,
+                              'name': item.name,
+                              'description': item.description,
+                              'unit': item.unit,
+                              'date': item.date,
+                              'image': item.image,
+                            };
+
+                            return AlertDialog(
+                              title: Center(
+                                child: Text('Edit ${item.name}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                              content: SingleChildScrollView(
+                                child: Container(
+                                  height: MediaQuery.of(context).size.height * 0.5,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: <Widget>[
+                                      Center(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          child: Image.network(
+                                            item.image,
+                                            height: 150,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      TextField(
+                                        onChanged: (value) {
+                                          selectedData['name'] = value;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: 'Name',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        controller: _nameEditingController,
+                                      ),
+                                      SizedBox(height: 10),
+                                      TextField(
+                                        onChanged: (value) {
+                                          selectedData['description'] = value;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: 'Description',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        controller: _descriptionEditingController,
+                                      ),
+                                      SizedBox(height: 10),
+                                      TextField(
+                                        onChanged: (value) {
+                                          selectedData['unit'] = int.tryParse(value) ?? 0;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: 'Unit',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        controller: _unitEditingController,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    _updateInventory();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text(
+                                    'Update',
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        _deleteInventory(item.id!);
+                      },
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  // View data dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Center(
+                          child: Text(
+                            item.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  'Description: ${item.description}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  'Unit: ${item.unit}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  'Date: ${item.date.day}/${item.date.month}/${item.date.year}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.network(
+                                    item.image,
+                                    height: 150,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         actions: <Widget>[
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: const Text('Close'),
+                            child: const Text(
+                              'Close',
+                              style: TextStyle(
+                                color: Colors.blue,
+                              ),
+                            ),
                           ),
                         ],
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          },
+                      );
+                    },
+                  );
+
+                },
+              );
+            },
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add data dialog
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return SizedBox(
-                height: 300,
-                child: AlertDialog(
-                  title: const Text('Add Data'),
-                  content: Column(
-                    children: <Widget>[
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'Name'),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // Add data dialog
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(
+                    'Add Data',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  content: SingleChildScrollView(
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          TextField(
+                            onChanged: (value) {
+                              newData['name'] = value;
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Name',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          TextField(
+                            onChanged: (value) {
+                              newData['description'] = value;
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          TextField(
+                            onChanged: (value) {
+                              newData['unit'] = int.tryParse(value) ?? 0;
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Unit',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                'Date: ${selectedDate.year}-${selectedDate.month}-${selectedDate.day}',
+                              ),
+                              SizedBox(width: 10),
+                              ElevatedButton(
+                                onPressed: () => _selectDate(context),
+                                child: Text('Select Date'),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () => pickImage(ImageSource.gallery),
+                            child: Text('Pick Image from Gallery'),
+                          ),
+                          SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () => pickImage(ImageSource.camera),
+                            child: Text('Pick Image from Camera'),
+                          ),
+                          SizedBox(height: 20),
+                        ],
                       ),
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'Description'),
-                      ),
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'Unit'),
-                      ),
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'Date'),
-                      ),
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'Image URL'),
-                      ),
-                    ],
+                    ),
                   ),
                   actions: <Widget>[
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: const Text('Cancel'),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.red), // Customize color as needed
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () {
+                    ElevatedButton(
+                      onPressed: () async {
+                        //newData['image'] = await uploadFile();
+                        _addInventory();
                         Navigator.of(context).pop();
+                        // Add functionality here
                       },
-                      child: const Text('Add'),
+                      child: Text(
+                        'Add',
+                      ),
                     ),
                   ],
-                ),
-              );
-            },
-          );
-        },
-        child: const Icon(Icons.add),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      )
+                );
+              },
+            );
+
+          },
+          child: const Icon(Icons.add),
+        )
     );
   }
 
