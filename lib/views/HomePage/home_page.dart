@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:wkldlabs_flutter_frontend/widgets/nav_drawer.dart';
 import 'package:wkldlabs_flutter_frontend/views/RoomSchedule/room_schedule_card.dart';
@@ -69,11 +70,34 @@ class _HomePageState extends State<HomePage> {
                         subtitle: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Icon(FontAwesomeIcons.facebook, size: 48),
-                            Icon(FontAwesomeIcons.xTwitter, size: 48),
-                            Icon(FontAwesomeIcons.linkedin, size: 48),
-                            Icon(FontAwesomeIcons.instagram, size: 48),
-                            Icon(FontAwesomeIcons.youtube, size: 48),
+                            IconButton(
+                              icon: Icon(Icons.web),
+                              iconSize: 32,
+                              onPressed: () async {
+                                await launchUrl(Uri.parse("https://wkldlabs.misa.pw"));
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(FontAwesomeIcons.linkedin),
+                              iconSize: 32,
+                              onPressed: () async {
+                                await launchUrl(Uri.parse("https://www.linkedin.com/company/rplgdc-labs/mycompany/"));
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(FontAwesomeIcons.instagram),
+                              iconSize: 32,
+                              onPressed: () async {
+                                await launchUrl(Uri.parse("http://instagram.com/rplgdc_"));
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(FontAwesomeIcons.link),
+                              iconSize: 32,
+                              onPressed: () async {
+                                await launchUrl(Uri.parse("https://linktr.ee/rplgdc_laboratory"));
+                              },
+                            ),
                           ],
                         ),
                       ),
