@@ -1,8 +1,11 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:wkldlabs_flutter_frontend/views/DaftarPertemuan/api/pertemuan_api.dart';
 import 'dart:ui';
-import 'db_controller.dart';
-import 'model.dart';
+import 'model/pertemuan_model.dart';
 import '../../widgets/nav_drawer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DaftarPertemuan extends StatefulWidget {
   const DaftarPertemuan({Key? key, required this.title}) : super(key: key);
@@ -14,13 +17,26 @@ class DaftarPertemuan extends StatefulWidget {
 }
 
 class _DaftarPertemuanState extends State<DaftarPertemuan> {
-  final MeetingController _meetingController = MeetingController();
+  final MeetingAPI _meetingController = MeetingAPI();
+  final _formKey = GlobalKey<FormState>();
   List<Meeting> meetings = [];
   bool isLoading = true;
   bool isDialogVisible = false;
   Map<String, dynamic>? selectedData;
   bool showView = false;
   int? selectedIndex;
+  final _meetingNameController = TextEditingController();
+  final _speakerController = TextEditingController();
+  final _meetingLinkController = TextEditingController();
+  final _descriptionController = TextEditingController();
+
+  Map<String, dynamic> newData = {
+    'meetingname': '',
+    'speaker': '',
+    'datetime': DateTime.now(),
+    'meetinglink': '',
+    'description': '',
+  };
 
   TextEditingController _dateController = TextEditingController();
   TextEditingController _timeController = TextEditingController();
@@ -33,13 +49,14 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
 
   Future<void> _fetchMeetings() async {
     try {
-      final fetchedMeetings = await _meetingController.fetchMeetings();
+      final fetchedMeetings = await _meetingController.getList();
       setState(() {
         meetings = fetchedMeetings;
         isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Error fetching meetings: $e');
+      debugPrintStack(stackTrace: stackTrace);
       setState(() {
         isLoading = false;
       });
@@ -48,12 +65,22 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
 
   void _handleCreate() async {
     try {
-      final newMeeting = await _meetingController.createMeeting();
+      print(newData);
+      print(_speakerController.text);
+      final newMeeting = await _meetingController.createMeeting(Meeting(
+        meetingname: _meetingNameController.text,
+        speaker: _speakerController.text,
+        datetime: newData['datetime'],
+        meetinglink: _meetingLinkController.text,
+        description: _descriptionController.text,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
       setState(() {
         meetings.add(newMeeting);
       });
-    } catch (e) {
-      debugPrint('Error creating meeting: $e');
+    } catch (error) {
+      print(error);
     }
   }
 
@@ -73,26 +100,10 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
 
   void _handleDelete(int id) async {
     try {
-      await _meetingController.deleteMeeting(id);
-      setState(() {
-        meetings.removeWhere((meeting) => meeting.id == id);
-      });
-    } catch (e) {
-      debugPrint('Error deleting meeting: $e');
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (pickedTime != null) {
-      final String formattedTime = pickedTime.format(context);
-      setState(() {
-        _timeController.text = formattedTime;
-      });
-      _handleChange('time', formattedTime);
+      await MeetingAPI().deleteMeeting(id);
+      await _fetchMeetings();
+    } catch (error) {
+      print(error);
     }
   }
 
@@ -149,10 +160,11 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    meetings[index].meetingname,
+                                    meetings[index].meetingname!,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -188,58 +200,82 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
                     child: AlertDialog(
                       title: Text('New Meeting'),
                       content: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextFormField(
-                              decoration: InputDecoration(labelText: 'Meeting Name'),
-                              onChanged: (value) =>
-                                  _handleChange('meetingname', value),
-                            ),
-                            TextFormField(
-                              decoration: InputDecoration(labelText: 'Speaker'),
-                              onChanged: (value) => _handleChange('speaker', value),
-                            ),
-                            TextFormField(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Meeting Name'),
+                                controller: _meetingNameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Meeting Name tidak boleh kosong';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Speaker'),
+                                controller: _speakerController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Speaker Name tidak boleh kosong';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
                                 controller: _dateController,
                                 onTap: () {
                                   _selectDate();
                                 },
                                 readOnly: true,
-                                decoration: InputDecoration(labelText: 'Date'),
+                                decoration:
+                                    InputDecoration(labelText: 'Datetime'),
                                 onChanged: (value) {
-                                  if (value != null) {
-                                    _handleChange('date', _dateController.text);
+                                  setState(() {
+                                    newData['datetime'] = value;
+                                  });
+                                },
+                              ),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Meeting Link'),
+                                controller: _meetingLinkController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'MeetingLink tidak boleh kosong';
                                   }
-                                }),
-                            TextFormField(
-                              controller: _timeController,
-                              decoration: InputDecoration(labelText: 'Time'),
-                              onChanged: (value) => _handleChange('time', value),
-                              onTap: () {
-                                _selectTime(context);
-                              },
-                              readOnly: true,
-                            ),
-                            TextFormField(
-                              decoration: InputDecoration(labelText: 'Meeting Link'),
-                              onChanged: (value) =>
-                                  _handleChange('meetinglink', value),
-                            ),
-                            TextFormField(
-                              decoration: InputDecoration(labelText: 'Description'),
-                              onChanged: (value) =>
-                                  _handleChange('description', value),
-                            ),
-                          ],
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Description'),
+                                controller: _descriptionController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Description tidak boleh kosong';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       actions: [
                         ElevatedButton(
-                          onPressed: () {
-                            _handleSubmit();
-                          },
                           child: Text('Save'),
+                          onPressed: () async {
+                            if(_formKey.currentState!.validate()){
+                             _handleCreate();
+                            _handleClose();
+                            }
+                          }
                         ),
                         TextButton(
                           onPressed: () {
@@ -259,10 +295,11 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
                         child: ListBody(
                           children: <Widget>[
                             Text("Speaker: ${selectedData!['speaker']}"),
-                            Text("Date: ${selectedData!['date']}"),
-                            Text("Time: ${selectedData!['time']}"),
-                            Text("Meeting Link: ${selectedData!['meetinglink']}"),
-                            Text("Description: ${selectedData!['description']}"),
+                            Text("Datetime: ${selectedData!['datetime']}"),
+                            Text(
+                                "Meeting Link: ${selectedData!['meetinglink']}"),
+                            Text(
+                                "Description: ${selectedData!['description']}"),
                           ],
                         ),
                       ),
@@ -283,6 +320,11 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
+            _meetingNameController.text = "";
+            _speakerController.text = "";
+            _dateController.text = "";
+            _meetingLinkController.text = "";
+            _descriptionController.text = "";
             isDialogVisible = true;
             selectedData = {};
           });
@@ -304,15 +346,60 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
   }
 
   void _handleSubmit() {
-    if (selectedData != null && selectedData!.length == 6) {
-      // final meeting = Meeting.fromJson(selectedData!); 
-      _handleCreate();
-      setState(() {
-        isDialogVisible = false;
-        selectedData = null;
-        _dateController.clear();
-        _timeController.clear();
-      });
+    if (selectedData != null) {
+      if (selectedData!['time'] != null) {
+        final meeting = Meeting(
+          id: selectedData!['id'],
+          meetingname: selectedData!['meetingname'],
+          speaker: selectedData!['speaker'],
+          datetime: DateTime.parse(selectedData!['datetime']),
+          meetinglink: selectedData!['meetinglink'],
+          description: selectedData!['description'],
+          createdAt: DateTime.parse(selectedData!['createdAt']),
+          updatedAt: DateTime.parse(selectedData!['updatedAt']),
+        );
+
+        print('Meeting Data:');
+        print('ID: ${meeting.id}');
+        print('Meeting Name: ${meeting.meetingname}');
+        print('Speaker: ${meeting.speaker}');
+        print('Date: ${meeting.datetime}');
+        print('Meeting Link: ${meeting.meetinglink}');
+        print('Description: ${meeting.description}');
+        print('Created At: ${meeting.createdAt}');
+        print('Updated At: ${meeting.updatedAt}');
+
+        if (selectedIndex == null) {
+          _handleCreate();
+        } else {
+          _handleUpdate(meeting);
+        }
+        setState(() {
+          isDialogVisible = false;
+          selectedIndex = null;
+          selectedData = null;
+          _dateController.clear();
+          _timeController.clear();
+        });
+      } else {
+        showDialog<void>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('Please select a time before saving.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
     } else {
       showDialog<void>(
         context: context,
@@ -339,7 +426,6 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
       isDialogVisible = false;
       selectedData = null;
       _dateController.clear();
-      _timeController.clear();
     });
   }
 }
