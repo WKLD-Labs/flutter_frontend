@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:wkldlabs_flutter_frontend/views/DaftarPertemuan/api/pertemuan_api.dart';
 import 'dart:ui';
@@ -46,6 +44,14 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
     super.initState();
     _fetchMeetings();
   }
+
+Future<void> _launchUrl(String url) async {
+  final Uri uri = Uri.parse(url);
+  if (!await launchUrl(uri)) {
+    throw Exception('Could not launch $url');
+  }
+}
+
 
   Future<void> _fetchMeetings() async {
     try {
@@ -269,14 +275,13 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
                       ),
                       actions: [
                         ElevatedButton(
-                          child: Text('Save'),
-                          onPressed: () async {
-                            if(_formKey.currentState!.validate()){
-                             _handleCreate();
-                            _handleClose();
-                            }
-                          }
-                        ),
+                            child: Text('Save'),
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                _handleCreate();
+                                _handleClose();
+                              }
+                            }),
                         TextButton(
                           onPressed: () {
                             _handleClose();
@@ -297,7 +302,22 @@ class _DaftarPertemuanState extends State<DaftarPertemuan> {
                             Text("Speaker: ${selectedData!['speaker']}"),
                             Text("Datetime: ${selectedData!['datetime']}"),
                             Text(
-                                "Meeting Link: ${selectedData!['meetinglink']}"),
+                                "Meeting Link: "),
+                            GestureDetector(
+                              onTap: () async {
+                                final url = selectedData?['meetinglink'];
+                                if (url != null) {
+                                  await _launchUrl(url);
+                                }
+                              },
+                              child: Text(
+                                "Meeting Link: ${selectedData?['meetinglink'] ?? 'Not Available'}",
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
                             Text(
                                 "Description: ${selectedData!['description']}"),
                           ],
