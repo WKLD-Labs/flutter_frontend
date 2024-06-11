@@ -21,7 +21,7 @@ class AgendaModel {
     return AgendaModel(
       id: json['id'],
       name: json['name'],
-      description: json['description'],
+      description: json['description']??"",
       startDate: DateTime.parse(json['start_date']),
       endDate: DateTime.parse(json['end_date']),
       createdAt: DateTime.parse(json['createdAt']),

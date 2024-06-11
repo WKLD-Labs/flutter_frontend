@@ -28,9 +28,9 @@ class _AgendaPageState extends State<AgendaPage> {
     });
     loadAgenda();
   }
+
   void loadAgenda() {
     setState(() {
-      
       futureAgenda = AgendaAPI().getList();
     });
   }
@@ -52,12 +52,12 @@ class _AgendaPageState extends State<AgendaPage> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return AgendaCalendar(
-                      month: currentMonth,
-                      year: currentYear,
-                      onCalendarChanged: onCalendarChanged,
-                      onRefresh: loadAgenda,
-                      agenda: snapshot.data!,
-                    );
+                month: currentMonth,
+                year: currentYear,
+                onCalendarChanged: onCalendarChanged,
+                onRefresh: loadAgenda,
+                agenda: snapshot.data!,
+              );
             } else if (snapshot.hasError) {
               debugPrint(snapshot.error.toString());
               return Center(
@@ -66,14 +66,15 @@ class _AgendaPageState extends State<AgendaPage> {
                       child: const Text('Error fetching data')));
             }
             return const Center(child: CircularProgressIndicator());
-          }
-        ),
-        floatingActionButton: FloatingActionButton(
+          }),
+      floatingActionButton: FloatingActionButton(
         onPressed: () => showDialog<void>(
           context: context,
           barrierDismissible: false, // user must tap button!
           builder: (BuildContext context) {
-            return NewAgendaDialog(onSubmit: loadAgenda,);
+            return NewAgendaDialog(
+              onSubmit: loadAgenda,
+            );
           },
         ),
         tooltip: 'Jadwal Baru',
@@ -113,7 +114,7 @@ class AgendaCalendar extends StatefulWidget {
   final Function(int, int) onCalendarChanged;
   final Function() onRefresh;
   final List<AgendaModel> agenda;
-  
+
   @override
   State<AgendaCalendar> createState() => _AgendaCalendarState();
 }
@@ -121,23 +122,30 @@ class AgendaCalendar extends StatefulWidget {
 class _AgendaCalendarState extends State<AgendaCalendar> {
   late CrCalendarController _calendarController;
   CrCalendarController _updateCalendar(List<AgendaModel> agenda) {
-    List<CalendarEventModel> scheduleCalendarList = agenda.map(
-      (e) => CalendarEventModel(name: e.name, begin: e.startDate, end: e.endDate),
-    ).toList();
+    List<CalendarEventModel> scheduleCalendarList = agenda
+        .map(
+          (e) => CalendarEventModel(
+              name: e.name, begin: e.startDate, end: e.endDate),
+        )
+        .toList();
     _calendarController.events?.clear();
     _calendarController.events?.addAll(scheduleCalendarList);
     _calendarController.clearSelected();
     return _calendarController;
   }
+
   void _onCalendarSwipe(int year, int month) {
     widget.onCalendarChanged(year, month);
   }
 
   @override
   void initState() {
-    List<CalendarEventModel> agendaCalendarList = widget.agenda.map(
-      (e) => CalendarEventModel(name: e.name, begin: e.startDate, end: e.endDate),
-    ).toList();
+    List<CalendarEventModel> agendaCalendarList = widget.agenda
+        .map(
+          (e) => CalendarEventModel(
+              name: e.name, begin: e.startDate, end: e.endDate),
+        )
+        .toList();
     setState(() {
       _calendarController = CrCalendarController(
         onSwipe: _onCalendarSwipe,
@@ -145,7 +153,6 @@ class _AgendaCalendarState extends State<AgendaCalendar> {
       );
     });
     super.initState();
-    
   }
 
   @override
@@ -165,8 +172,10 @@ class _AgendaCalendarState extends State<AgendaCalendar> {
                 TextButton(
                   onPressed: () => _calendarController.goToDate(DateTime.now()),
                   child: Text(
-                    DateFormat(DateFormat.YEAR_MONTH).format(DateTime(widget.year, widget.month)),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    DateFormat(DateFormat.YEAR_MONTH)
+                        .format(DateTime(widget.year, widget.month)),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
                 IconButton(
@@ -176,23 +185,39 @@ class _AgendaCalendarState extends State<AgendaCalendar> {
               ],
             ),
             Expanded(
-              child: CrCalendar(
-                controller: _updateCalendar(widget.agenda),
-                initialDate: DateTime.now(),
-                
-              )
-            ),
+                child: CrCalendar(
+                    controller: _updateCalendar(widget.agenda),
+                    initialDate: DateTime.now(),
+                    onDayClicked: (events, day) {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                                title: Text(DateFormat('dd MMMM yyyy').format(day)),
+                                content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: events
+                                        .map((e) => ListTile(
+                                              title: Text(e.name),
+                                              subtitle: Text(
+                                                  "Start : " + DateFormat('dd MMMM yyyy \'pukul\' HH.mm').format(e.begin) +
+                                                      "\n" + 
+                                                      "End   : " + DateFormat('dd MMMM yyyy \'pukul\' HH.mm').format(e.end)),
+                                            ))
+                                        .toList()),
+                              ));
+                    })),
           ],
         ),
       ),
     );
   }
 }
+
 class NewAgendaDialog extends StatefulWidget {
   const NewAgendaDialog({
     super.key,
     required this.onSubmit,
-    });
+  });
   final Function() onSubmit;
   @override
   State<NewAgendaDialog> createState() => _NewAgendaDialogState();
@@ -209,10 +234,10 @@ class _NewAgendaDialogState extends State<NewAgendaDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: const Text('Agenda Baru'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
+      title: const Text('Agenda Baru'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: <Widget>[
             Form(
               key: _formKey,
               child: Column(
@@ -244,12 +269,16 @@ class _NewAgendaDialogState extends State<NewAgendaDialog> {
                 ],
               ),
             ),
-            const Text('Pilih Tanggal:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            const Text(
+              'Pilih Tanggal:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             TextButton(
               onPressed: () async {
                 DateTimeRange? dateRange = await showDateRangePicker(
                     context: context,
-                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                    firstDate:
+                        DateTime.now().subtract(const Duration(days: 365)),
                     lastDate: DateTime.now().add(const Duration(days: 365)));
                 if (dateRange != null) {
                   setState(() {
@@ -279,10 +308,14 @@ class _NewAgendaDialogState extends State<NewAgendaDialog> {
                 ],
               ),
             ),
-             const Text('Jam Mulai:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+            const Text(
+              'Jam Mulai:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             TextButton(
                 onPressed: () async {
-                  TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                  TimeOfDay? newTime = await showTimePicker(
+                      context: context, initialTime: TimeOfDay.now());
                   if (newTime != null) {
                     setState(() {
                       startDate = DateTime(
@@ -295,61 +328,70 @@ class _NewAgendaDialogState extends State<NewAgendaDialog> {
                     });
                   }
                 },
-                child: Text(timeFormatter.format(startDate), style: const TextStyle(fontSize: 24),)),
-            const Text('Jam Akhir:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+                child: Text(
+                  timeFormatter.format(startDate),
+                  style: const TextStyle(fontSize: 24),
+                )),
+            const Text(
+              'Jam Akhir:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             TextButton(
-                onPressed: () async {
-                  TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                  if (newTime != null) {
-                    setState(() {
-                      endDate = DateTime(
-                        endDate.year,
-                        endDate.month,
-                        endDate.day,
-                        newTime.hour,
-                        newTime.minute,
-                      );
-                    });
-                  }
-                },
-                child: Text(timeFormatter.format(endDate), style: const TextStyle(fontSize: 24),),)
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Batal'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text('Simpan'),
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                AgendaModel newSchedule = AgendaModel(
-                  name: nameController.text,
-                  description: descriptionController.text,
-                  startDate: startDate,
-                  endDate: endDate,
-                );
-                try {
-                  await AgendaAPI().create(newSchedule);
-                  widget.onSubmit();
-                  if (!context.mounted) return;
-                  Navigator.of(context).pop();
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(e.toString()),
-                  ));
+              onPressed: () async {
+                TimeOfDay? newTime = await showTimePicker(
+                    context: context, initialTime: TimeOfDay.now());
+                if (newTime != null) {
+                  setState(() {
+                    endDate = DateTime(
+                      endDate.year,
+                      endDate.month,
+                      endDate.day,
+                      newTime.hour,
+                      newTime.minute,
+                    );
+                  });
                 }
-                
-                
+              },
+              child: Text(
+                timeFormatter.format(endDate),
+                style: const TextStyle(fontSize: 24),
+              ),
+            )
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Batal'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: const Text('Simpan'),
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              AgendaModel newSchedule = AgendaModel(
+                name: nameController.text,
+                description: descriptionController.text,
+                startDate: startDate,
+                endDate: endDate,
+              );
+              try {
+                await AgendaAPI().create(newSchedule);
+                widget.onSubmit();
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(e.toString()),
+                ));
               }
-            },
-          ),
-        ],
-      );
+            }
+          },
+        ),
+      ],
+    );
   }
 }
 /*
