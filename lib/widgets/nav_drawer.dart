@@ -31,9 +31,9 @@ class NavDrawer extends StatelessWidget {
     // _NavigationDestination(
     //   'Dummy', Icon(Icons.egg_outlined), Icon(Icons.egg), '/dummy'
     // ),
-    _NavigationDestination(
-      'Jadwal', Icon(Icons.calendar_today), Icon(Icons.calendar_today), '/jadwal'
-    ),
+    // _NavigationDestination(
+    //   'Jadwal', Icon(Icons.calendar_today), Icon(Icons.calendar_today), '/jadwal'
+    // ),
     _NavigationDestination(
       'Agenda', Icon(Icons.calendar_month), Icon(Icons.calendar_month), '/agenda'
     ),

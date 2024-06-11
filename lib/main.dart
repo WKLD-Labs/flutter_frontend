@@ -56,7 +56,7 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'agenda',
           builder: (BuildContext context, GoRouterState state) {
-            return const AgendaPage(title: 'Flutter Demo Agenda Page');
+            return const AgendaPage(title: 'Agenda Page');
           },
         ),
         GoRoute(
