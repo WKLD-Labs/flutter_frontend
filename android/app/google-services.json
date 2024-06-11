@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "592482769243",
+    "project_id": "tubes-11749",
+    "storage_bucket": "tubes-11749.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592482769243:android:7b261af39f85ba2274e27e",
+        "android_client_info": {
+          "package_name": "com.example.wkldlabs_flutter_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0dXNjYae6aCQZaTMDtfeviSJ853Om70s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

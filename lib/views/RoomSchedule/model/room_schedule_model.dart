@@ -20,13 +20,18 @@ class RoomScheduleModel {
   factory RoomScheduleModel.fromJson(Map<String, dynamic> json) {
     return RoomScheduleModel(
       id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      startDate: DateTime.parse(json['start_date']),
-      endDate: DateTime.parse(json['end_date']),
+      name: json['name'] ?? "",
+      description: json['description'] ?? "",
+      startDate: DateTime.parse(json['start_date']).toLocal(),
+      endDate: DateTime.parse(json['end_date']).toLocal(),
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
     );
+  }
+
+  @override
+  String toString() {
+    return 'RoomScheduleModel(id: $id, name: $name, description: $description, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   Map<String, dynamic> toJson() {
@@ -34,8 +39,8 @@ class RoomScheduleModel {
       'id': id,
       'name': name,
       'description': description,
-      'start_date': startDate.toIso8601String(),
-      'end_date': endDate.toIso8601String(),
+      'start_date': startDate.toUtc().toIso8601String(),
+      'end_date': endDate.toUtc().toIso8601String(),
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:wkldlabs_flutter_frontend/views/LoginPage/logout.dart';
 import 'package:wkldlabs_flutter_frontend/widgets/nav_drawer.dart';
 import 'package:wkldlabs_flutter_frontend/global/login_context.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 
 
 
@@ -17,9 +21,13 @@ import 'views/DaftarPertemuan/pertemuan_page.dart';
 import 'views/InventoryPage/invetory_page.dart';
 import 'views/MemberPage/member_page.dart';
 import 'views/RoomSchedule/room_schedule.dart';
+import 'views/LoginPage/logout.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -87,9 +95,17 @@ final GoRouter _router = GoRouter(
             return DocumentPage();
           },
         ),
+        GoRoute(
+          path: 'logout',
+          builder: (BuildContext context, GoRouterState state) {
+            return const LogoutPage();
+          },
+        ),
       ],
       redirect: (context, state) {
-        NavDrawer.loginListener.update(LoginContext.getIsLogin());
+        (() async {
+          NavDrawer.loginListener.update(await LoginContext.getIsLogin());
+        })();
         return null;
       },
     ),
