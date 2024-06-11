@@ -14,7 +14,7 @@ class MemberPage extends StatefulWidget {
 }
 
 class _MemberPageState extends State<MemberPage> {
-  final MemberController _memberController = MemberController();
+  final MemberAPI _memberController = MemberAPI();
   List<MemberData> members = [];
   bool isLoading = true;
   bool isDialogVisible = false;
@@ -29,9 +29,8 @@ class _MemberPageState extends State<MemberPage> {
 
   Future<void> _fetchMemberData() async {
     try {
-      final fetchedMembers = await _memberController.fetchMembers();
+      members = await _memberController.getList();
       setState(() {
-        members = fetchedMembers;
         isLoading = false;
       });
     } catch (e) {
@@ -42,7 +41,7 @@ class _MemberPageState extends State<MemberPage> {
     }
   }
 
-  void handleCreate() async {
+  Future<void> handleCreate() async {
     try {
       if (selectedData != null) {
         final newMember = await _memberController.createMember(selectedData!);
@@ -55,7 +54,7 @@ class _MemberPageState extends State<MemberPage> {
     }
   }
 
-  void handleUpdate(MemberData member) async {
+  Future<void> handleUpdate(MemberData member) async {
     try {
       final updatedMember = await _memberController.updateMember(member);
       setState(() {
@@ -69,7 +68,7 @@ class _MemberPageState extends State<MemberPage> {
     }
   }
 
-  void handleDelete(int id) async {
+  Future<void> handleDelete(int id) async {
     try {
       await _memberController.deleteMember(id);
       setState(() {
@@ -132,10 +131,11 @@ class _MemberPageState extends State<MemberPage> {
                                         ),
                                       ),
                                       Text(
-                                          '${members[index].faculty} - ${members[index].major}'),
+                                          '${members[index].faculty}'),
+                                      Text(
+                                          '${members[index].major}'),
                                       Text(
                                           'Tahun Masuk: ${members[index].entryYear}'),
-                                      Text('Usia: ${members[index].age}'),
                                     ],
                                   ),
                                   PopupMenuButton<String>(
@@ -172,60 +172,45 @@ class _MemberPageState extends State<MemberPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             TextFormField(
+                              initialValue: selectedData?.name ?? '',
                               decoration: InputDecoration(labelText: 'Nama'),
-                              onChanged: (value) => handleChange('name', value),
+                              onChanged: (value) => handleNameChange(value),
                             ),
                             TextFormField(
+                              initialValue: selectedData?.nim ?? '',
                               decoration: InputDecoration(labelText: 'NIM'),
                               onChanged: (value) =>
-                                  handleChange('studentId', value),
+                                  handleNimChange(value),
                             ),
                             TextFormField(
-                              decoration: InputDecoration(labelText: 'Kelas'),
-                              onChanged: (value) =>
-                                  handleChange('className', value),
-                            ),
-                            TextFormField(
-                              decoration: InputDecoration(labelText: 'Jurusan'),
-                              onChanged: (value) =>
-                                  handleChange('department', value),
-                            ),
-                            TextFormField(
+                              initialValue: selectedData?.faculty ?? '',
                               decoration:
                                   InputDecoration(labelText: 'Fakultas'),
-                              onChanged: (value) =>
-                                  handleChange('faculty', value),
+                              onChanged: (value) => handleFacultyChange(value),
                             ),
                             TextFormField(
+                              initialValue: selectedData?.major ?? '',
                               decoration: InputDecoration(labelText: 'Jurusan'),
-                              onChanged: (value) =>
-                                  handleChange('major', value),
+                              onChanged: (value) => handleMajorChange(value),
                             ),
                             TextFormField(
+                              initialValue:
+                                  selectedData?.entryYear?.toString() ?? '',
                               decoration:
                                   InputDecoration(labelText: 'Tahun Masuk'),
                               onChanged: (value) =>
-                                  handleChange('entryYear', int.parse(value)),
-                            ),
-                            TextFormField(
-                              decoration: InputDecoration(labelText: 'Usia'),
-                              onChanged: (value) =>
-                                  handleChange('age', int.parse(value)),
+                                  handleEntryYearChange(value),
                             ),
                           ],
                         ),
                       ),
                       actions: [
                         ElevatedButton(
-                          onPressed: () {
-                            handleSubmit();
-                          },
+                          onPressed: handleSubmit,
                           child: Text('Save'),
                         ),
                         TextButton(
-                          onPressed: () {
-                            handleClose();
-                          },
+                          onPressed: handleClose,
                           child: Text('Close'),
                         ),
                       ],
@@ -239,13 +224,10 @@ class _MemberPageState extends State<MemberPage> {
                       content: SingleChildScrollView(
                         child: ListBody(
                           children: <Widget>[
-                            Text("NIM: ${selectedData!.studentId}"),
-                            Text("Kelas: ${selectedData!.className}"),
-                            Text("Jurusan: ${selectedData!.department}"),
+                            Text("NIM: ${selectedData!.nim}"),
                             Text("Fakultas: ${selectedData!.faculty}"),
                             Text("Jurusan: ${selectedData!.major}"),
                             Text("Tahun Masuk: ${selectedData!.entryYear}"),
-                            Text("Usia: ${selectedData!.age}"),
                           ],
                         ),
                       ),
@@ -269,13 +251,10 @@ class _MemberPageState extends State<MemberPage> {
             isDialogVisible = true;
             selectedData = MemberData(
               name: '',
-              studentId: '',
-              className: '',
-              department: '',
+              nim: '',
               faculty: '',
               major: '',
               entryYear: 0,
-              age: null,
             );
           });
         },
@@ -287,36 +266,108 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
-  void handleChange(String field, dynamic value) {
+  void handleNameChange(String value) {
     setState(() {
-      if (selectedData != null) {
-        switch (field) {
-          case 'name':
-            selectedData!.name = value;
-            break;
-          case 'studentId':
-            selectedData!.studentId = value;
-            break;
-          case 'className':
-            selectedData!.className = value;
-            break;
-          case 'department':
-            selectedData!.department = value;
-            break;
-          case 'faculty':
-            selectedData!.faculty = value;
-            break;
-          case 'major':
-            selectedData!.major = value;
-            break;
-          case 'entryYear':
-            selectedData!.entryYear = value;
-            break;
-          case 'age':
-            selectedData!.age = value;
-            break;
-        }
-      }
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: value,
+        nim: selectedData?.nim,
+        faculty: selectedData?.faculty,
+        major: selectedData?.major,
+        entryYear: selectedData?.entryYear,
+      );
+    });
+  }
+
+  void handleNimChange(String value) {
+    setState(() {
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: selectedData?.name,
+        nim: value,
+        faculty: selectedData?.faculty,
+        major: selectedData?.major,
+        entryYear: selectedData?.entryYear,
+      );
+    });
+  }
+
+  void handleClassNameChange(String value) {
+    setState(() {
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: selectedData?.name,
+        nim: selectedData?.nim,
+        faculty: selectedData?.faculty,
+        major: selectedData?.major,
+        entryYear: selectedData?.entryYear,
+      );
+    });
+  }
+
+  void handleDepartmentChange(String value) {
+    setState(() {
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: selectedData?.name,
+        nim: selectedData?.nim,
+        faculty: selectedData?.faculty,
+        major: selectedData?.major,
+        entryYear: selectedData?.entryYear,
+      );
+    });
+  }
+
+  void handleFacultyChange(String value) {
+    setState(() {
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: selectedData?.name,
+        nim: selectedData?.nim,
+        faculty: value,
+        major: selectedData?.major,
+        entryYear: selectedData?.entryYear,
+      );
+    });
+  }
+
+  void handleMajorChange(String value) {
+    setState(() {
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: selectedData?.name,
+        nim: selectedData?.nim,
+        faculty: selectedData?.faculty,
+        major: value,
+        entryYear: selectedData?.entryYear,
+      );
+    });
+  }
+
+  void handleEntryYearChange(String value) {
+    setState(() {
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: selectedData?.name,
+        nim: selectedData?.nim,
+        faculty: selectedData?.faculty,
+        major: selectedData?.major,
+        entryYear:
+            value.isNotEmpty ? int.parse(value) : null, // Handle empty input
+      );
+    });
+  }
+
+  void handleAgeChange(int value) {
+    setState(() {
+      selectedData = MemberData(
+        id: selectedData?.id,
+        name: selectedData?.name,
+        nim: selectedData?.nim,
+        faculty: selectedData?.faculty,
+        major: selectedData?.major,
+        entryYear: selectedData?.entryYear,
+      );
     });
   }
 
