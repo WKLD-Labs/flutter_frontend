@@ -18,9 +18,8 @@ class _MemberPageState extends State<MemberPage> {
   List<MemberData> members = [];
   bool isLoading = true;
   bool isDialogVisible = false;
-  Map<String, dynamic>? selectedData;
+  MemberData? selectedData;
   bool showView = false;
-  int? selectedIndex;
 
   @override
   void initState() {
@@ -43,12 +42,14 @@ class _MemberPageState extends State<MemberPage> {
     }
   }
 
-  void handleCreate(Map<String, dynamic> data) async {
+  void handleCreate() async {
     try {
-      final newMember = await _memberController.createMember();
-      setState(() {
-        members.add(newMember);
-      });
+      if (selectedData != null) {
+        final newMember = await _memberController.createMember(selectedData!);
+        setState(() {
+          members.add(newMember);
+        });
+      }
     } catch (e) {
       debugPrint('Error creating member: $e');
     }
@@ -72,7 +73,7 @@ class _MemberPageState extends State<MemberPage> {
     try {
       await _memberController.deleteMember(id);
       setState(() {
-        members.removeWhere((members) => members.id == id);
+        members.removeWhere((member) => member.id == id);
       });
     } catch (e) {
       debugPrint('Error deleting member: $e');
@@ -105,7 +106,7 @@ class _MemberPageState extends State<MemberPage> {
                           return GestureDetector(
                             onTap: () {
                               setState(() {
-                                selectedData = members[index].toJson();
+                                selectedData = members[index];
                                 showView = true;
                               });
                             },
@@ -116,14 +117,26 @@ class _MemberPageState extends State<MemberPage> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    members[index].name,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        members[index].name!,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      Text(
+                                          '${members[index].faculty} - ${members[index].major}'),
+                                      Text(
+                                          'Tahun Masuk: ${members[index].entryYear}'),
+                                      Text('Usia: ${members[index].age}'),
+                                    ],
                                   ),
                                   PopupMenuButton<String>(
                                     onSelected: (String choice) {
@@ -164,15 +177,40 @@ class _MemberPageState extends State<MemberPage> {
                             ),
                             TextFormField(
                               decoration: InputDecoration(labelText: 'NIM'),
-                              onChanged: (value) => handleChange('studentId', value),
+                              onChanged: (value) =>
+                                  handleChange('studentId', value),
                             ),
                             TextFormField(
                               decoration: InputDecoration(labelText: 'Kelas'),
-                              onChanged: (value) => handleChange('className', value),
+                              onChanged: (value) =>
+                                  handleChange('className', value),
                             ),
                             TextFormField(
                               decoration: InputDecoration(labelText: 'Jurusan'),
-                              onChanged: (value) => handleChange('department', value),
+                              onChanged: (value) =>
+                                  handleChange('department', value),
+                            ),
+                            TextFormField(
+                              decoration:
+                                  InputDecoration(labelText: 'Fakultas'),
+                              onChanged: (value) =>
+                                  handleChange('faculty', value),
+                            ),
+                            TextFormField(
+                              decoration: InputDecoration(labelText: 'Jurusan'),
+                              onChanged: (value) =>
+                                  handleChange('major', value),
+                            ),
+                            TextFormField(
+                              decoration:
+                                  InputDecoration(labelText: 'Tahun Masuk'),
+                              onChanged: (value) =>
+                                  handleChange('entryYear', int.parse(value)),
+                            ),
+                            TextFormField(
+                              decoration: InputDecoration(labelText: 'Usia'),
+                              onChanged: (value) =>
+                                  handleChange('age', int.parse(value)),
                             ),
                           ],
                         ),
@@ -197,13 +235,17 @@ class _MemberPageState extends State<MemberPage> {
                   BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
                     child: AlertDialog(
-                      title: Text(selectedData!['name']),
+                      title: Text(selectedData!.name!),
                       content: SingleChildScrollView(
                         child: ListBody(
                           children: <Widget>[
-                            Text("NIM: ${selectedData!['studentId']}"),
-                            Text("Kelas: ${selectedData!['className']}"),
-                            Text("Jurusan: ${selectedData!['department']}"),
+                            Text("NIM: ${selectedData!.studentId}"),
+                            Text("Kelas: ${selectedData!.className}"),
+                            Text("Jurusan: ${selectedData!.department}"),
+                            Text("Fakultas: ${selectedData!.faculty}"),
+                            Text("Jurusan: ${selectedData!.major}"),
+                            Text("Tahun Masuk: ${selectedData!.entryYear}"),
+                            Text("Usia: ${selectedData!.age}"),
                           ],
                         ),
                       ),
@@ -225,7 +267,16 @@ class _MemberPageState extends State<MemberPage> {
         onPressed: () {
           setState(() {
             isDialogVisible = true;
-            selectedData = {};
+            selectedData = MemberData(
+              name: '',
+              studentId: '',
+              className: '',
+              department: '',
+              faculty: '',
+              major: '',
+              entryYear: 0,
+              age: null,
+            );
           });
         },
         child: Icon(Icons.add),
@@ -236,18 +287,46 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
-  void handleChange(String field, String value) {
+  void handleChange(String field, dynamic value) {
     setState(() {
       if (selectedData != null) {
-        selectedData![field] = value;
+        switch (field) {
+          case 'name':
+            selectedData!.name = value;
+            break;
+          case 'studentId':
+            selectedData!.studentId = value;
+            break;
+          case 'className':
+            selectedData!.className = value;
+            break;
+          case 'department':
+            selectedData!.department = value;
+            break;
+          case 'faculty':
+            selectedData!.faculty = value;
+            break;
+          case 'major':
+            selectedData!.major = value;
+            break;
+          case 'entryYear':
+            selectedData!.entryYear = value;
+            break;
+          case 'age':
+            selectedData!.age = value;
+            break;
+        }
       }
     });
   }
 
   void handleSubmit() {
-    if (selectedData != null && selectedData!.length == 6) {
-      final members = MemberData.fromJson(selectedData!);
-      handleCreate();
+    if (selectedData != null) {
+      if (selectedData!.id == null) {
+        handleCreate();
+      } else {
+        handleUpdate(selectedData!);
+      }
       setState(() {
         isDialogVisible = false;
         selectedData = null;

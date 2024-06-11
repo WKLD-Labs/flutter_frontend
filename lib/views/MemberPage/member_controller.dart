@@ -39,19 +39,13 @@ class MemberController {
     }
   }
 
-  Future<MemberData> createMember() async {
+  Future<MemberData> createMember(MemberData member) async {
     try {
       var headers = {
         'Content-Type': 'application/json',
         'Authorization':
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzE3NDI1MDA5LCJleHAiOjE3MTgwMjk4MDl9.-S4ryYWaVz8ioDUT3W-g5yKa7MxUbuAxR-qgH7wgu8A'
       };
-      var data = json.encode({
-        "name": "Habli Zulvana Ath-Thaariq",
-        "studentId": "1302210024",
-        "className": "SE-45-03",
-        "department": "Rekayasa Perangkat Lunak",
-      });
       var dio = Dio();
       var response = await dio.request(
         'http://localhost:5500/api/member',
@@ -59,7 +53,7 @@ class MemberController {
           method: 'POST',
           headers: headers,
         ),
-        data: data,
+        data: member.toJson(),
       );
 
       if (response.statusCode == 201) {

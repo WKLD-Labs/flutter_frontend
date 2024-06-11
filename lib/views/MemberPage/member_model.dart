@@ -2,10 +2,14 @@ import 'dart:convert';
 
 class MemberData {
   final int? id;
-  final String name;
-  final int studentId;
-  final String className;
-  final String department;
+  late final String? name;
+  late final String? studentId;
+  late final String? className;
+  late final String? department;
+  late final String? faculty;
+  late final String? major;
+  late final int? entryYear;
+  late final int? age;
 
   MemberData({
     this.id,
@@ -13,17 +17,11 @@ class MemberData {
     required this.studentId,
     required this.className,
     required this.department,
+    required this.faculty,
+    required this.major,
+    required this.entryYear,
+    this.age,
   });
-
-  factory MemberData.fromJson(Map<String, dynamic> json) {
-    return MemberData(
-      id: json['id'],
-      name: json['name'],
-      studentId: json['studentId'],
-      className: json['className'],
-      department: json['department']
-    );
-  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -32,16 +30,29 @@ class MemberData {
       'studentId': studentId,
       'className': className,
       'department': department,
+      'faculty': faculty,
+      'major': major,
+      'entryYear': entryYear,
+      'age': age,
     };
   }
-  
+
+  factory MemberData.fromJson(Map<String, dynamic> json) {
+    return MemberData(
+      id: json['id'],
+      name: json['name'],
+      studentId: json['studentId'],
+      className: json['className'],
+      department: json['department'],
+      faculty: json['faculty'],
+      major: json['major'],
+      entryYear: json['entryYear'],
+      age: json['age'],
+    );
+  }
+
   static List<MemberData> membersFromJson(String jsonData) {
     final data = json.decode(jsonData);
     return List<MemberData>.from(data.map((item) => MemberData.fromJson(item)));
-  }
-
-  static String membersToJson(List<MemberData> data) {
-    final jsonData = data.map((item) => item.toJson()).toList();
-    return json.encode(jsonData);
   }
 }
